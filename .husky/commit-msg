@@ -1,0 +1,5 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+# pnpm run commitlint --edit $1
+pnpm commitlint --edit $1 --config=commitlint.config.cjs
