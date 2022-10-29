@@ -7,6 +7,7 @@ import Components from 'unplugin-vue-components/vite';
 import { AntDesignVueResolver } from 'unplugin-vue-components/resolvers';
 
 const pathSrc = path.resolve(__dirname, 'src');
+console.log('pathSrc', pathSrc);
 
 // https://vitejs.dev/config/
 export default defineConfig({
