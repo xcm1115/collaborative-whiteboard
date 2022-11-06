@@ -3,6 +3,9 @@ import { createApp } from 'vue';
 import router from '@/router';
 
 import App from '@/App.vue';
+import { useRegisterSW } from 'virtual:pwa-register/vue';
+
+useRegisterSW();
 
 import '@/assets/styles/index.scss';
 
