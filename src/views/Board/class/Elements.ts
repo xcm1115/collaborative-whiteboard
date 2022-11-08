@@ -2,7 +2,7 @@ import Board from './Board';
 import BaseElement from '@/elements/BaseElement';
 import Rectangle from '@/elements/Rectangle';
 
-enum ElementType {
+export enum ElementType {
   Rectangle = 'rectangle',
 }
 
@@ -32,35 +32,42 @@ class Elements {
     if (element) {
       this.activeElement = element;
     }
-
-    return this;
   }
 
-  createElementByType(options: { type: ElementType }) {
+  createElementByType(userId: string, options: any) {
     switch (options.type) {
       case ElementType.Rectangle:
-        return new Rectangle(this.board, options);
+        return new Rectangle(userId, this.board, options);
       default:
         return null;
     }
   }
 
-  createElement(options: any) {
+  createElement(userId: string, options: any) {
     if (!this.activeElement) {
-      const element = this.createElementByType(options);
+      const element = this.createElementByType(userId, options);
       this.addElement(element!);
       this.setActiveElement(element!);
     }
   }
 
-  createRectangle(x: number, y: number, width: number, height: number) {
-    this.createElement({
+  // 创建矩形
+  createRectangle(
+    userId: string,
+    mouseDownX: number,
+    mouseDownY: number,
+    width: number,
+    height: number
+  ) {
+    const data = {
       type: ElementType.Rectangle,
-      x,
-      y,
+      mouseDownX,
+      mouseDownY,
       width,
       height,
-    });
+    };
+
+    this.createElement(userId, data);
     this.activeElement?.updateSize(width, height);
   }
 }

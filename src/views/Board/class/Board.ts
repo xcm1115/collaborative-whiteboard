@@ -1,4 +1,7 @@
+import ws from '@/websocket/events';
+import { nanoid } from 'nanoid';
 import Elements from './Elements';
+import { ElementType } from '@/elements';
 import Render from './Render';
 
 type Option = {
@@ -6,11 +9,13 @@ type Option = {
 };
 
 class Board {
+  public userId: string;
   private container: HTMLDivElement;
   public board: HTMLCanvasElement = document.createElement('canvas');
   public ctx: CanvasRenderingContext2D = this.board.getContext('2d')!;
   public elements: Elements;
   private render: Render;
+  private drawType: ElementType;
 
   public width = 0;
   public height = 0;
@@ -20,6 +25,7 @@ class Board {
   private mouseDownY = 0;
 
   constructor(options: Option) {
+    this.userId = nanoid();
     this.container = options.container;
 
     this.elements = new Elements(this);
@@ -27,6 +33,9 @@ class Board {
 
     this.initBoard();
     this.bindEvent();
+
+    // 暂时写死
+    this.drawType = ElementType.Rectangle;
   }
 
   getContainerInfo() {
@@ -49,6 +58,16 @@ class Board {
     this.container.appendChild(this.board);
   }
 
+  sendWsMsg(userId: string, operation: string, data: Record<string, unknown> | null) {
+    const msg = {
+      userId,
+      operation,
+      data,
+    };
+
+    ws.send(JSON.stringify(msg));
+  }
+
   onMousedown(e: MouseEvent) {
     this.isMouseDown = true;
     this.mouseDownX = e.clientX;
@@ -60,7 +79,16 @@ class Board {
       return;
     }
 
+    // switch (this.drawType) {
+    //   case ElementType.Rectangle:
+    //     break;
+
+    //   default:
+    //     break;
+    // }
+
     this.elements.createRectangle(
+      this.userId,
       this.mouseDownX,
       this.mouseDownY,
       e.clientX - this.mouseDownX,
@@ -68,6 +96,16 @@ class Board {
     );
 
     this.render.render();
+
+    const data = {
+      type: 'Rectangle',
+      mouseDownX: this.mouseDownX,
+      mouseDownY: this.mouseDownY,
+      width: e.clientX - this.mouseDownX,
+      height: e.clientY - this.mouseDownY,
+    };
+
+    this.sendWsMsg(this.userId, 'draw', data);
   }
 
   onMouseup(e: MouseEvent) {
@@ -75,6 +113,8 @@ class Board {
     this.mouseDownX = 0;
     this.mouseDownY = 0;
     this.elements.cancelActiveElement();
+
+    this.sendWsMsg(this.userId, 'mouseup', null);
   }
 
   bindEvent() {

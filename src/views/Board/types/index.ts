@@ -1,8 +1,5 @@
 type State = {
-  canvasInfo: DOMRect | null | undefined;
-  mouseDownX: number;
-  mouseDownY: number;
-  isMouseDown: boolean;
+  isEditingBoardName: boolean;
 };
 
 export type { State };

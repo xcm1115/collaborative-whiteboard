@@ -7,12 +7,15 @@ export {};
 
 declare module '@vue/runtime-core' {
   export interface GlobalComponents {
+    AButton: typeof import('ant-design-vue/es')['Button'];
+    AInput: typeof import('ant-design-vue/es')['Input'];
     ALayout: typeof import('ant-design-vue/es')['Layout'];
     ALayoutContent: typeof import('ant-design-vue/es')['LayoutContent'];
     ALayoutHeader: typeof import('ant-design-vue/es')['LayoutHeader'];
     AMenu: typeof import('ant-design-vue/es')['Menu'];
     AMenuItem: typeof import('ant-design-vue/es')['MenuItem'];
     AMenuItemGroup: typeof import('ant-design-vue/es')['MenuItemGroup'];
+    AModal: typeof import('ant-design-vue/es')['Modal'];
     ASubMenu: typeof import('ant-design-vue/es')['SubMenu'];
     Header: typeof import('./src/components/Layout/Header/index.vue')['default'];
     Layout: typeof import('./src/components/Layout/index.vue')['default'];

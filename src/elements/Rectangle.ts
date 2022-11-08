@@ -1,20 +1,30 @@
 import Board from '@/views/Board/class/Board';
 import BaseElement from './BaseElement';
+import ws from '@/websocket/events';
+
+// type Options = {
+//   type: ElementType;
+//   x: number;
+//   y: number;
+//   width: number;
+//   height: number;
+// };
 
 // 矩形元素类
 class Rectangle extends BaseElement {
-  constructor(board: Board, options: any) {
-    super(board, options);
+  private startX = 0;
+  private startY = 0;
+
+  constructor(userId: string, board: Board, options: any) {
+    super(userId, board, options);
+
+    this.startX = this.mouseDownX - this.board.width / 2;
+    this.startY = this.mouseDownY - this.board.height / 2;
   }
 
   render() {
     this.board.ctx.beginPath();
-    this.board.ctx.rect(
-      this.x - this.board.width / 2,
-      this.y - this.board.height / 2,
-      this.width,
-      this.height
-    );
+    this.board.ctx.rect(this.startX, this.startY, this.width, this.height);
     this.board.ctx.stroke();
   }
 }

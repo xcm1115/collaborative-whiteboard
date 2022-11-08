@@ -1,15 +1,14 @@
 <script setup lang="ts">
-import Header from './Header/index.vue';
+// Component
+import { NLayout, NLayoutContent } from 'naive-ui';
 </script>
 
 <template>
-  <a-layout>
-    <Header />
-
-    <a-layout-content>
+  <n-layout class="cw-flex cw-flex-col cw-h-screen">
+    <n-layout-content>
       <router-view />
-    </a-layout-content>
-  </a-layout>
+    </n-layout-content>
+  </n-layout>
 </template>
 
 <style scoped lang="scss"></style>
