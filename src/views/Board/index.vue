@@ -2,6 +2,7 @@
 import { reactive, ref, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import ws from '@/websocket/events';
+import DrawTools from '../../components/DrawTools/index.vue';
 
 // Component
 import {
@@ -96,6 +97,10 @@ onMounted(() => {
 onUnmounted(() => {
   // ws.close();
 });
+
+const curDrawTool = (drawTool: string) => {
+  board.setDrawType(drawTool);
+};
 </script>
 
 <template>
@@ -175,6 +180,10 @@ onUnmounted(() => {
     </span>
   </div>
 
+  <div class="draw-tools-panel cw-fixed cw-top-20 cw-left-10 cw-z-50 cw-px-6 cw-py-4 cw-bg-white">
+    <DrawTools @change-draw-tool="curDrawTool" />
+  </div>
+
   <div class="cw-fixed cw-top-0 cw-left-0 cw-w-full cw-h-full">
     <div
       ref="container"
@@ -186,5 +195,8 @@ onUnmounted(() => {
 <style scoped lang="scss">
 .cw-canvas {
   transform: translate(-50%, -50%);
+}
+.draw-tools-panel {
+  border-radius: 20%;
 }
 </style>
