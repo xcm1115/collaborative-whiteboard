@@ -1,12 +1,18 @@
-import ws from '@/websocket/events';
 import { nanoid } from 'nanoid';
 import Elements from './Elements';
 import { ElementType } from '@/elements';
 import Render from './Render';
+import { storeToRefs } from 'pinia';
+
+// Store
+import { mainStore } from '@/store';
 
 type Option = {
   container: HTMLDivElement;
 };
+
+const store = mainStore();
+const { ws } = storeToRefs(store);
 
 class Board {
   public userId: string;
@@ -65,7 +71,9 @@ class Board {
       data,
     };
 
-    ws.send(JSON.stringify(msg));
+    if (ws.value) {
+      ws.value.send(JSON.stringify(msg));
+    }
   }
 
   onMousedown(e: MouseEvent) {

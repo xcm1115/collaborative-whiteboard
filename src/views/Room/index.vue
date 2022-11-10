@@ -147,6 +147,7 @@ onMounted(() => {
 onUnmounted(() => {
   if (ws.value) {
     ws.value.close();
+    ws.value = null;
   }
 });
 </script>

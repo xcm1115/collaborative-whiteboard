@@ -5,9 +5,6 @@ import Layout from '@/components/Layout/index.vue';
 
 // Theme
 import themeOverrides from '@/theme';
-
-// Socket.IO
-import '@/websocket/events';
 </script>
 
 <template>

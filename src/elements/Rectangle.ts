@@ -1,6 +1,5 @@
-import Board from '@/views/Board/class/Board';
+import Board from '@/views/Room/class/Board';
 import BaseElement from './BaseElement';
-import ws from '@/websocket/events';
 
 // type Options = {
 //   type: ElementType;
