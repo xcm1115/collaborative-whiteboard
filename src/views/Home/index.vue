@@ -192,11 +192,8 @@ const handleCreateBoard = async () => {
 };
 
 const joinBoard = () => {
-  state.loading = true;
-  setTimeout(() => {
-    state.loading = false;
-    state.joinBoardVisible = false;
-  }, 1000);
+  router.push(`/room/${inputValue.value}`);
+  message.success('加入白板成功');
 };
 </script>
 

@@ -9,6 +9,7 @@ module.exports = {
         'regular-text': '#606266',
         'secondary-text': '#909399',
         board: '#fdfcff',
+        'primary-black': '#232527',
       },
     },
   },

@@ -29,6 +29,7 @@ import {
   Add24Regular as Add,
   Subtract24Regular as Subtract,
 } from '@vicons/fluent';
+import DrawTools from '@/components/DrawTools/index.vue';
 
 // Type
 import { State } from './types';
@@ -71,6 +72,10 @@ const init = async () => {
   }
 };
 
+const curDrawTool = (drawTool: string) => {
+  board.setDrawType(drawTool);
+};
+
 const backToHome = () => {
   router.push({
     name: 'home',
@@ -100,46 +105,43 @@ watch(
   }
 );
 
-onMounted(() => {
-  init();
+onMounted(async () => {
+  await init();
 
   if (ws.value) {
     ws.value.addEventListener('message', async (event) => {
-      const data = await event.data.text();
+      let msg = await event.data;
+      msg = JSON.parse(msg);
 
-      data.split('\n').forEach((msg: any) => {
-        msg = JSON.parse(msg);
+      if (msg.userId && msg.userId !== board.userId) {
+        if (msg.operation === 'draw') {
+          board.elements.createRectangle(
+            msg.userId,
+            msg.data.mouseDownX,
+            msg.data.mouseDownY,
+            msg.data.width,
+            msg.data.height
+          );
+          board.render.render();
 
-        if (msg.userId && msg.userId !== board.userId) {
-          if (msg.operation === 'draw') {
-            board.elements.createRectangle(
-              msg.userId,
-              msg.data.mouseDownX,
-              msg.data.mouseDownY,
-              msg.data.width,
-              msg.data.height
-            );
-            board.render.render();
-
-            // board.render.clearBoard();
-            // board.ctx.beginPath();
-            // board.ctx.rect(
-            //   msg.data.mouseDownX - board.board.width / 2,
-            //   msg.data.mouseDownY - board.board.height / 2,
-            //   msg.data.width,
-            //   msg.data.height
-            // );
-            // board.ctx.stroke();
-          }
-
-          if (msg.operation === 'mouseup') {
-            board.isMouseDown = false;
-            board.mouseDownX = 0;
-            board.mouseDownY = 0;
-            board.elements.cancelActiveElement();
-          }
+          // board.render.clearBoard();
+          // board.ctx.beginPath();
+          // board.ctx.rect(
+          //   msg.data.mouseDownX - board.board.width / 2,
+          //   msg.data.mouseDownY - board.board.height / 2,
+          //   msg.data.width,
+          //   msg.data.height
+          // );
+          // board.ctx.stroke();
         }
-      });
+
+        if (msg.operation === 'mouseup') {
+          board.isMouseDown = false;
+          board.mouseDownX = 0;
+          board.mouseDownY = 0;
+          board.elements.cancelActiveElement();
+        }
+      }
     });
   }
 });
@@ -230,6 +232,8 @@ onUnmounted(() => {
       class="cw-canvas cw-absolute cw-left-1/2 cw-top-1/2 cw-w-full cw-h-full cw-bg-board"
     ></div>
   </div>
+
+  <DrawTools @change-draw-tool="curDrawTool" />
 
   <span class="cw-tabs cw-fixed cw-bottom-[20px] cw-flex cw-items-center">
     <n-radio-group v-model:value="currentTab" class="cw-mr-2" size="large">

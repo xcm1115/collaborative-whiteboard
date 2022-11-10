@@ -40,8 +40,16 @@ class Board {
     this.initBoard();
     this.bindEvent();
 
-    // 暂时写死
-    this.drawType = ElementType.Rectangle;
+    // 默认箭头状态
+    this.drawType = ElementType.Arrow;
+  }
+
+  setDrawType(drawType: string) {
+    if (drawType === 'Rectangle') {
+      this.drawType = ElementType.Rectangle;
+    } else {
+      this.drawType = ElementType.Arrow;
+    }
   }
 
   getContainerInfo() {
@@ -87,26 +95,25 @@ class Board {
       return;
     }
 
-    // switch (this.drawType) {
-    //   case ElementType.Rectangle:
-    //     break;
+    switch (this.drawType) {
+      case ElementType.Rectangle:
+        this.elements.createRectangle(
+          this.userId,
+          this.mouseDownX,
+          this.mouseDownY,
+          e.clientX - this.mouseDownX,
+          e.clientY - this.mouseDownY
+        );
 
-    //   default:
-    //     break;
-    // }
+        break;
 
-    this.elements.createRectangle(
-      this.userId,
-      this.mouseDownX,
-      this.mouseDownY,
-      e.clientX - this.mouseDownX,
-      e.clientY - this.mouseDownY
-    );
-
+      default:
+        break;
+    }
     this.render.render();
 
     const data = {
-      type: 'Rectangle',
+      type: ElementType.Rectangle,
       mouseDownX: this.mouseDownX,
       mouseDownY: this.mouseDownY,
       width: e.clientX - this.mouseDownX,
