@@ -1,41 +1,194 @@
 <script setup lang="ts">
-import { reactive } from 'vue';
+import { reactive, ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { nanoid } from 'nanoid/async';
+import { storeToRefs } from 'pinia';
+
+// Store
+import { mainStore } from '@/store';
 
 // Component
-import { NButton, NModal, NInput } from 'naive-ui';
+import {
+  NButton,
+  NModal,
+  NInput,
+  NIcon,
+  NAvatar,
+  NTabs,
+  NTabPane,
+  NForm,
+  NFormItemRow,
+  useMessage,
+  FormInst,
+} from 'naive-ui';
+import { List24Regular as List } from '@vicons/fluent';
+
+// API
+import { login, register } from '@/api/auth';
+import { createBoard } from '@/api/board';
 
 // Type
-import { State } from './types';
+import { State, LoginData, CreateBoardData } from './types';
 
 const router = useRouter();
 
+const store = mainStore();
+const { userId, userName, userAvatar, token } = storeToRefs(store);
+
+const message = useMessage();
+
+const loginRules = {
+  username: {
+    required: true,
+    message: 'Please input your username',
+  },
+  password: {
+    required: true,
+    message: 'Please input your password',
+  },
+};
+const registerRules = {
+  username: {
+    required: true,
+    message: 'Please input your username',
+  },
+  password: {
+    required: true,
+    message: 'Please input your password',
+  },
+  confirmPassword: {
+    required: true,
+    message: 'Please input your password',
+  },
+};
+
+// Refs
+const loginFormRef = ref<FormInst | null>(null);
+const loginFormValue = ref({
+  username: '',
+  password: '',
+});
+const registerFormRef = ref<FormInst | null>(null);
+const registerFormValue = ref({
+  username: '',
+  password: '',
+  confirmPassword: '',
+});
+const tabValue = ref('login');
+const inputValue = ref('');
+
 const state: State = reactive({
+  loginModalVisible: false,
   joinBoardVisible: false,
   inputValue: '',
   loading: false,
 });
 
-const handleModalVisible = (visible: boolean) => {
+const handleLoginModalVisible = (visible: boolean) => {
+  state.loginModalVisible = visible;
+};
+
+const handleLogin = async (e: MouseEvent) => {
+  e.preventDefault();
+  loginFormRef.value?.validate();
+
+  const postData = {
+    username: loginFormValue.value.username,
+    password: loginFormValue.value.password,
+  };
+
+  state.loading = true;
+
+  try {
+    const res = await login(postData);
+    const data: LoginData = res.data as LoginData;
+
+    if (Number(res.code) === 0) {
+      userId.value = data.id;
+      userName.value = loginFormValue.value.username;
+      token.value = data.token;
+
+      message.success('登录成功');
+      handleLoginModalVisible(false);
+    } else {
+      throw new Error(res.message);
+    }
+  } catch (error) {
+    message.warning(`登录失败: ${error}`);
+  } finally {
+    state.loading = false;
+  }
+};
+
+const handleRegister = async (e: MouseEvent) => {
+  e.preventDefault();
+  registerFormRef.value?.validate();
+
+  if (registerFormValue.value.password !== registerFormValue.value.confirmPassword) {
+    message.warning('两次输入的密码不一致');
+    return;
+  }
+
+  const postData = {
+    username: registerFormValue.value.username,
+    password: registerFormValue.value.password,
+  };
+
+  state.loading = true;
+
+  try {
+    const res = await register(postData);
+
+    if (Number(res.code) === 0) {
+      message.success('注册成功');
+      tabValue.value = 'login';
+    } else {
+      throw new Error(res.message);
+    }
+  } catch (error) {
+    message.warning(`注册失败: ${error}`);
+  } finally {
+    state.loading = false;
+  }
+};
+
+const handleJoinBoardModalVisible = (visible: boolean) => {
+  if (visible && !userId.value) {
+    message.warning('您尚未登录，请先登录');
+    state.loginModalVisible = true;
+    return;
+  }
+
   state.joinBoardVisible = visible;
 };
 
-const inputChange = (value: string) => {
-  state.inputValue = value;
-};
+const handleCreateBoard = async () => {
+  if (!userId.value) {
+    message.warning('您尚未登录，请先登录');
+    state.loginModalVisible = true;
+    return;
+  }
 
-const createBoard = async () => {
+  const postData = {
+    token: token.value,
+  };
+
   state.loading = true;
-  const boardId = await nanoid(import.meta.env.VITE_NANOID_LENGTH);
-  state.loading = false;
 
-  router.push({
-    name: 'board',
-    params: {
-      id: boardId,
-    },
-  });
+  try {
+    const res = await createBoard(postData);
+    const data: CreateBoardData = res.data as CreateBoardData;
+
+    if (Number(res.code) === 0) {
+      message.success('新建白板成功');
+      router.push(`/room/${data.roomId}`);
+    } else {
+      throw new Error(res.message);
+    }
+  } catch (error) {
+    message.warning(`新建白板失败: ${error}`);
+  } finally {
+    state.loading = false;
+  }
 };
 
 const joinBoard = () => {
@@ -48,17 +201,107 @@ const joinBoard = () => {
 </script>
 
 <template>
-  <div class="cw-flex cw-flex-col cw-items-center">
-    <img class="cw-w-1/5 cw-mt-[150px]" src="@/assets/images/home.svg" alt="illustration" />
+  <div class="cw-flex cw-justify-center">
+    <div class="cw-w-[400px] cw-h-screen cw-flex cw-flex-col cw-justify-center">
+      <div class="cw-flex cw-justify-between cw-items-center">
+        <n-icon class="cw-text-primary-text cw-cursor-pointer" size="24">
+          <List />
+        </n-icon>
 
-    <div class="cw-buttons">
-      <n-button size="large" @click="createBoard">新建白板</n-button>
-      <n-button class="cw-join-board" type="primary" size="large" @click="handleModalVisible(true)"
-        >加入白板</n-button
-      >
+        <template v-if="userId">
+          <n-avatar round size="large" :src="userAvatar" />
+        </template>
+        <template v-else>
+          <n-button strong secondary type="primary" @click="handleLoginModalVisible(true)">
+            登录
+          </n-button>
+        </template>
+      </div>
+
+      <img class="cw-w-full" src="@/assets/images/home.svg" alt="illustration" />
+
+      <div class="cw-buttons">
+        <n-button block size="large" @click="handleCreateBoard">新建白板</n-button>
+        <n-button block type="primary" size="large" @click="handleJoinBoardModalVisible(true)"
+          >加入白板</n-button
+        >
+      </div>
     </div>
   </div>
 
+  <!-- 登录注册 Modal -->
+  <n-modal
+    :show="state.loginModalVisible"
+    preset="dialog"
+    :show-icon="false"
+    :mask-closable="false"
+    @close="handleLoginModalVisible(false)"
+  >
+    <n-tabs default-value="login" size="large" justify-content="space-evenly">
+      <n-tab-pane name="login" tab="登录">
+        <n-form ref="loginFormRef" :model="loginFormValue" :rules="loginRules">
+          <n-form-item-row label="用户名" path="username">
+            <n-input v-model:value="loginFormValue.username" size="large" />
+          </n-form-item-row>
+          <n-form-item-row label="密码" path="password">
+            <n-input
+              v-model:value="loginFormValue.password"
+              size="large"
+              type="password"
+              show-password-on="mousedown"
+            />
+          </n-form-item-row>
+        </n-form>
+        <n-button
+          size="large"
+          type="primary"
+          block
+          secondary
+          strong
+          :loading="state.loading"
+          @click="handleLogin"
+        >
+          登录
+        </n-button>
+      </n-tab-pane>
+      <n-tab-pane name="signup" tab="注册">
+        <n-form ref="registerFormRef" :model="registerFormValue" :rules="registerRules">
+          <n-form-item-row label="用户名" path="username">
+            <n-input v-model:value="registerFormValue.username" size="large" />
+          </n-form-item-row>
+          <n-form-item-row label="密码" path="password">
+            <n-input
+              v-model:value="registerFormValue.password"
+              size="large"
+              type="password"
+              show-password-on="mousedown"
+            />
+          </n-form-item-row>
+          <n-form-item-row label="重复密码" path="confirmPassword">
+            <n-input
+              v-model:value="registerFormValue.confirmPassword"
+              size="large"
+              type="password"
+              show-password-on="mousedown"
+            />
+          </n-form-item-row>
+        </n-form>
+        <n-button
+          size="large"
+          type="primary"
+          block
+          secondary
+          strong
+          :loading="state.loading"
+          @click="handleRegister"
+        >
+          注册
+        </n-button>
+      </n-tab-pane>
+    </n-tabs>
+  </n-modal>
+
+  <!-- 加入白板 Modal -->
   <n-modal
     :show="state.joinBoardVisible"
     title="加入白板"
@@ -67,20 +310,19 @@ const joinBoard = () => {
     negative-text="取消"
     :show-icon="false"
     :mask-closable="false"
-    @close="handleModalVisible(false)"
+    @close="handleJoinBoardModalVisible(false)"
   >
     <div class="cw-py-4">
       <n-input
-        v-model:value="state.inputValue"
+        v-model:value="inputValue"
         type="text"
         placeholder="输入白板 ID 或链接"
         size="large"
-        @change="inputChange"
       />
     </div>
 
     <template #action>
-      <n-button size="large" @click="handleModalVisible(false)">取消</n-button>
+      <n-button size="large" @click="handleJoinBoardModalVisible(false)">取消</n-button>
       <n-button
         class="cw-join-board"
         type="primary"
@@ -97,7 +339,7 @@ const joinBoard = () => {
 .cw-buttons {
   @apply cw-flex cw-flex-col cw-w-full cw-items-center;
   :deep(.n-button) {
-    @apply cw-w-1/5 cw-mb-4;
+    @apply cw-mb-4;
   }
 }
 </style>

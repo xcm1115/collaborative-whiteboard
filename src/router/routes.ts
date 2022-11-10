@@ -10,9 +10,9 @@ const mainRoutes: RouteRecordRaw[] = [
     },
   },
   {
-    path: '/board/:id',
-    name: 'board',
-    component: () => import('@/views/Board/index.vue'),
+    path: '/room/:id',
+    name: 'room',
+    component: () => import('@/views/Room/index.vue'),
     meta: {
       title: '白板',
     },

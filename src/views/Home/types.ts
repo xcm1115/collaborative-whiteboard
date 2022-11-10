@@ -1,7 +1,18 @@
 type State = {
+  loginModalVisible: boolean;
   joinBoardVisible: boolean;
   inputValue: string;
   loading: boolean;
 };
 
-export type { State };
+type LoginData = {
+  id: string;
+  token: string;
+  rooms: string[];
+};
+
+type CreateBoardData = {
+  roomId: string;
+};
+
+export type { State, LoginData, CreateBoardData };

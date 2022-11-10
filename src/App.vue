@@ -1,6 +1,6 @@
 <script setup lang="ts">
 // Component
-import { NConfigProvider } from 'naive-ui';
+import { NConfigProvider, NMessageProvider } from 'naive-ui';
 import Layout from '@/components/Layout/index.vue';
 
 // Theme
@@ -12,7 +12,9 @@ import '@/websocket/events';
 
 <template>
   <NConfigProvider :theme-overrides="themeOverrides">
-    <Layout />
+    <n-message-provider>
+      <Layout />
+    </n-message-provider>
   </NConfigProvider>
 </template>
 

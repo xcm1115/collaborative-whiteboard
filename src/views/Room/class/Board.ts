@@ -14,7 +14,7 @@ class Board {
   public board: HTMLCanvasElement = document.createElement('canvas');
   public ctx: CanvasRenderingContext2D = this.board.getContext('2d')!;
   public elements: Elements;
-  private render: Render;
+  public render: Render;
   private drawType: ElementType;
 
   public width = 0;
