@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { reactive, ref, watch, onMounted, onUnmounted } from 'vue';
-import { useRouter, useRoute } from 'vue-router';
-import createWebSocket from '@/websocket';
+import { reactive, ref, onMounted, onUnmounted } from 'vue';
+import { useRouter } from 'vue-router';
+import WS from '@/websocket';
 
 import { storeToRefs } from 'pinia';
 
@@ -31,17 +31,20 @@ import {
 } from '@vicons/fluent';
 import DrawTools from '@/components/DrawTools/index.vue';
 
+// Draw
+import { drawRectangle } from './class/Draw';
+
 // Type
+import { Message } from '@/websocket/types';
 import { State } from './types';
 
 // Class
 import Board from './class/Board';
 
 const store = mainStore();
-const { userId, ws } = storeToRefs(store);
+const { userId, ws, roomId } = storeToRefs(store);
 
 const router = useRouter();
-const route = useRoute();
 
 const container = ref<HTMLDivElement | null>(null);
 const roomName = ref<string>('新建白板');
@@ -56,24 +59,62 @@ const currentTab = ref(0);
 const boards = ref<Board[]>([]);
 const currentBoard = ref<Board | null>(null);
 
-const roomId = route.params.id as string;
-let board: any = null;
-
 const state: State = reactive({
   isEditingBoardName: false,
 });
 
 const init = async () => {
   if (!ws.value && userId.value) {
-    ws.value = await createWebSocket(roomId, userId.value);
-    board = new Board({ container: container.value! });
+    ws.value = new WS();
+    ws.value.createWebSocket(roomId.value, userId.value);
+
+    const board = new Board({ boardId: 0, container: container.value! });
+
     boards.value.push(board);
     currentBoard.value = board;
   }
 };
 
-const curDrawTool = (drawTool: string) => {
-  board.setDrawType(drawTool);
+const wsOnOpen = () => {
+  ws.value!.instance?.addEventListener('open', () => {
+    const msg: Message = {
+      userId: userId.value!,
+      roomId: roomId.value!,
+      operation: 'join',
+      data: null,
+    };
+    ws.value!.instance?.send(JSON.stringify(msg));
+  });
+};
+
+const wsOnMessage = () => {
+  ws.value!.instance?.addEventListener('message', async (event) => {
+    const msg = await JSON.parse(event.data);
+
+    if (msg.userId && msg.userId !== userId.value) {
+      switch (msg.operation) {
+        case 'join':
+          break;
+        case 'draw':
+          drawRectangle(
+            currentBoard.value as Board,
+            msg.data.mouseDownX,
+            msg.data.mouseDownY,
+            msg.data.width,
+            msg.data.height,
+            false
+          );
+          break;
+        case 'mouseup':
+          currentBoard.value!.onMouseup();
+          break;
+        case 'leave':
+          break;
+        default:
+          break;
+      }
+    }
+  });
 };
 
 const backToHome = () => {
@@ -82,9 +123,13 @@ const backToHome = () => {
   });
 };
 
+const curDrawTool = (drawTool: string) => {
+  currentBoard.value!.setDrawType(drawTool);
+};
+
 const addTab = () => {
   container.value!.innerHTML = '';
-  const board = new Board({ container: container.value! });
+  const board = new Board({ boardId: boards.value.length + 1, container: container.value! });
 
   boards.value.push(board);
   tabsRef.value.push({
@@ -93,64 +138,41 @@ const addTab = () => {
   });
   currentBoard.value = board;
   currentTab.value = tabsRef.value.length - 1;
+
+  const data = {
+    boardId: board.boardId,
+  };
+  ws.value?.sendWsMsg(userId.value!, roomId.value!, 'add-board', data);
 };
 
-watch(
-  () => currentTab.value,
-  (val) => {
-    currentBoard.value = boards.value[val];
-    container.value!.innerHTML = '';
-    currentBoard.value!.initBoard();
-    currentBoard.value!.render.render();
-  }
-);
+const switchTab = (index: number) => {
+  currentBoard.value = boards.value[index];
+  container.value!.innerHTML = '';
+  currentBoard.value!.initBoard();
+  currentBoard.value!.render.render();
+
+  const data = {
+    boardId: index,
+  };
+  ws.value!.sendWsMsg(userId.value!, roomId.value!, 'switch-board', data);
+};
 
 onMounted(async () => {
-  await init();
-
-  if (ws.value) {
-    ws.value.addEventListener('message', async (event) => {
-      let msg = await event.data;
-      msg = JSON.parse(msg);
-
-      if (msg.userId && msg.userId !== board.userId) {
-        if (msg.operation === 'draw') {
-          board.elements.createRectangle(
-            msg.userId,
-            msg.data.mouseDownX,
-            msg.data.mouseDownY,
-            msg.data.width,
-            msg.data.height
-          );
-          board.render.render();
-
-          // board.render.clearBoard();
-          // board.ctx.beginPath();
-          // board.ctx.rect(
-          //   msg.data.mouseDownX - board.board.width / 2,
-          //   msg.data.mouseDownY - board.board.height / 2,
-          //   msg.data.width,
-          //   msg.data.height
-          // );
-          // board.ctx.stroke();
-        }
-
-        if (msg.operation === 'mouseup') {
-          board.isMouseDown = false;
-          board.mouseDownX = 0;
-          board.mouseDownY = 0;
-          board.elements.cancelActiveElement();
-        }
-      }
+  if (!userId.value) {
+    router.push({
+      name: 'home',
     });
   }
+
+  await init();
+
+  wsOnOpen();
+  wsOnMessage();
 });
 
 onUnmounted(() => {
-  if (ws.value) {
-    ws.value.close();
-    ws.value = null;
-  }
+  ws.value!.sendWsMsg(userId.value!, roomId.value!, 'leave', null);
+  ws.value!.closeWebSocket();
 });
 </script>
 
@@ -235,12 +257,18 @@ onUnmounted(() => {
 
   <DrawTools @change-draw-tool="curDrawTool" />
 
+  <!-- TODO: 拆成组件 -->
   <span class="cw-tabs cw-fixed cw-bottom-[20px] cw-flex cw-items-center">
-    <n-radio-group v-model:value="currentTab" class="cw-mr-2" size="large">
-      <n-radio-button v-for="(board, index) in tabsRef" :key="board.value" :value="index">
+    <n-radio-group
+      v-model:value="currentTab"
+      class="cw-mr-2"
+      size="large"
+      @update:value="switchTab"
+    >
+      <n-radio-button v-for="(tab, index) in tabsRef" :key="tab.value" :value="index">
         <div class="cw-flex cw-items-center">
           <!-- <span class="cw-mr-2"> -->
-          {{ board.label }}
+          {{ tab.label }}
           <!-- </span> -->
 
           <!-- <n-icon>

@@ -9,6 +9,7 @@ const mainStore = defineStore('main', {
       userAvatar: 'https://xsgames.co/randomusers/avatar.php?g=pixel',
       token: '',
       ws: null,
+      roomId: '',
     } as State),
   actions: {
     setUserInfo(userId: string, userName: string) {

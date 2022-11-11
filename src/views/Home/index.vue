@@ -19,20 +19,22 @@ import {
   NFormItemRow,
   useMessage,
   FormInst,
+  NList,
+  NListItem,
 } from 'naive-ui';
 import { List24Regular as List } from '@vicons/fluent';
 
 // API
 import { login, register } from '@/api/auth';
-import { createBoard } from '@/api/board';
+import { getRoomList, createRoom } from '@/api/room';
 
 // Type
-import { State, LoginData, CreateBoardData } from './types';
+import { State, LoginData, CreateRoomData, RoomListData } from './types';
 
 const router = useRouter();
 
 const store = mainStore();
-const { userId, userName, userAvatar, token } = storeToRefs(store);
+const { userId, userName, userAvatar, token, roomId } = storeToRefs(store);
 
 const message = useMessage();
 
@@ -81,7 +83,27 @@ const state: State = reactive({
   joinBoardVisible: false,
   inputValue: '',
   loading: false,
+  roomList: [],
 });
+
+const handleGetRoomList = async () => {
+  const postData = {
+    token: token.value,
+  };
+
+  try {
+    const res = await getRoomList(postData);
+    const data: RoomListData = res.data as RoomListData;
+
+    if (Number(res.code) === 0) {
+      state.roomList = data.rooms;
+    } else {
+      throw new Error(res.message);
+    }
+  } catch (error) {
+    message.warning(`获取白板列表失败: ${error}`);
+  }
+};
 
 const handleLoginModalVisible = (visible: boolean) => {
   state.loginModalVisible = visible;
@@ -106,6 +128,7 @@ const handleLogin = async (e: MouseEvent) => {
       userId.value = data.id;
       userName.value = loginFormValue.value.username;
       token.value = data.token;
+      state.roomList = data.rooms;
 
       message.success('登录成功');
       handleLoginModalVisible(false);
@@ -151,17 +174,21 @@ const handleRegister = async (e: MouseEvent) => {
   }
 };
 
-const handleJoinBoardModalVisible = (visible: boolean) => {
+const handleJoinRoomModalVisible = (visible: boolean) => {
   if (visible && !userId.value) {
     message.warning('您尚未登录，请先登录');
     state.loginModalVisible = true;
     return;
   }
 
+  if (visible) {
+    handleGetRoomList();
+  }
+
   state.joinBoardVisible = visible;
 };
 
-const handleCreateBoard = async () => {
+const handleCreateRoom = async () => {
   if (!userId.value) {
     message.warning('您尚未登录，请先登录');
     state.loginModalVisible = true;
@@ -175,11 +202,12 @@ const handleCreateBoard = async () => {
   state.loading = true;
 
   try {
-    const res = await createBoard(postData);
-    const data: CreateBoardData = res.data as CreateBoardData;
+    const res = await createRoom(postData);
+    const data: CreateRoomData = res.data as CreateRoomData;
 
     if (Number(res.code) === 0) {
       message.success('新建白板成功');
+      roomId.value = data.roomId;
       router.push(`/room/${data.roomId}`);
     } else {
       throw new Error(res.message);
@@ -191,8 +219,14 @@ const handleCreateBoard = async () => {
   }
 };
 
-const joinBoard = () => {
-  router.push(`/room/${inputValue.value}`);
+const joinBoard = (id?: string) => {
+  if (id) {
+    roomId.value = id;
+    router.push(`/room/${id}`);
+  } else {
+    router.push(`/room/${inputValue.value}`);
+  }
+
   message.success('加入白板成功');
 };
 </script>
@@ -218,8 +252,8 @@ const joinBoard = () => {
       <img class="cw-w-full" src="@/assets/images/home.svg" alt="illustration" />
 
       <div class="cw-buttons">
-        <n-button block size="large" @click="handleCreateBoard">新建白板</n-button>
-        <n-button block type="primary" size="large" @click="handleJoinBoardModalVisible(true)"
+        <n-button block size="large" @click="handleCreateRoom">新建白板</n-button>
+        <n-button block type="primary" size="large" @click="handleJoinRoomModalVisible(true)"
           >加入白板</n-button
         >
       </div>
@@ -303,32 +337,36 @@ const joinBoard = () => {
     :show="state.joinBoardVisible"
     title="加入白板"
     preset="dialog"
-    positive-text="加入"
-    negative-text="取消"
     :show-icon="false"
     :mask-closable="false"
-    @close="handleJoinBoardModalVisible(false)"
+    @close="handleJoinRoomModalVisible(false)"
   >
-    <div class="cw-py-4">
+    <div class="cw-py-4 cw-flex cw-justify-between">
       <n-input
         v-model:value="inputValue"
+        class="cw-mr-4"
         type="text"
         placeholder="输入白板 ID 或链接"
         size="large"
       />
-    </div>
-
-    <template #action>
-      <n-button size="large" @click="handleJoinBoardModalVisible(false)">取消</n-button>
       <n-button
         class="cw-join-board"
         type="primary"
         size="large"
         :loading="state.loading"
-        @click="joinBoard"
+        @click="joinBoard()"
         >确定</n-button
       >
-    </template>
+    </div>
+
+    <n-list bordered clickable>
+      <template #header>
+        <div class="cw-flex cw-justify-center">已创建的白板</div>
+      </template>
+      <n-list-item v-for="roomId in state.roomList" :key="roomId" @click="joinBoard(roomId)">{{
+        roomId
+      }}</n-list-item>
+    </n-list>
   </n-modal>
 </template>
 

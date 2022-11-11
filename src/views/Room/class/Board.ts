@@ -1,4 +1,3 @@
-import { nanoid } from 'nanoid';
 import Elements from './Elements';
 import { ElementType } from '@/elements';
 import Render from './Render';
@@ -7,31 +6,35 @@ import { storeToRefs } from 'pinia';
 // Store
 import { mainStore } from '@/store';
 
+// Draw
+import { drawRectangle } from './Draw';
+
 type Option = {
+  boardId: number;
   container: HTMLDivElement;
 };
 
 const store = mainStore();
-const { ws } = storeToRefs(store);
+const { userId, ws, roomId } = storeToRefs(store);
 
 class Board {
-  public userId: string;
-  private container: HTMLDivElement;
+  public boardId: number;
+  public container: HTMLDivElement;
   public board: HTMLCanvasElement = document.createElement('canvas');
   public ctx: CanvasRenderingContext2D = this.board.getContext('2d')!;
   public elements: Elements;
   public render: Render;
-  private drawType: ElementType;
+  public drawType: ElementType;
 
   public width = 0;
   public height = 0;
 
-  private isMouseDown = false;
-  private mouseDownX = 0;
-  private mouseDownY = 0;
+  public isMouseDown = false;
+  public mouseDownX = 0;
+  public mouseDownY = 0;
 
   constructor(options: Option) {
-    this.userId = nanoid();
+    this.boardId = options.boardId;
     this.container = options.container;
 
     this.elements = new Elements(this);
@@ -72,18 +75,6 @@ class Board {
     this.container.appendChild(this.board);
   }
 
-  sendWsMsg(userId: string, operation: string, data: Record<string, unknown> | null) {
-    const msg = {
-      userId,
-      operation,
-      data,
-    };
-
-    if (ws.value) {
-      ws.value.send(JSON.stringify(msg));
-    }
-  }
-
   onMousedown(e: MouseEvent) {
     this.isMouseDown = true;
     this.mouseDownX = e.clientX;
@@ -97,39 +88,27 @@ class Board {
 
     switch (this.drawType) {
       case ElementType.Rectangle:
-        this.elements.createRectangle(
-          this.userId,
+        drawRectangle(
+          this,
           this.mouseDownX,
           this.mouseDownY,
           e.clientX - this.mouseDownX,
-          e.clientY - this.mouseDownY
+          e.clientY - this.mouseDownY,
+          true
         );
-
         break;
-
       default:
         break;
     }
-    this.render.render();
-
-    const data = {
-      type: ElementType.Rectangle,
-      mouseDownX: this.mouseDownX,
-      mouseDownY: this.mouseDownY,
-      width: e.clientX - this.mouseDownX,
-      height: e.clientY - this.mouseDownY,
-    };
-
-    this.sendWsMsg(this.userId, 'draw', data);
   }
 
-  onMouseup(e: MouseEvent) {
+  onMouseup(e?: MouseEvent) {
     this.isMouseDown = false;
     this.mouseDownX = 0;
     this.mouseDownY = 0;
     this.elements.cancelActiveElement();
 
-    this.sendWsMsg(this.userId, 'mouseup', null);
+    ws.value!.sendWsMsg(userId.value!, roomId.value, 'mouseup', null);
   }
 
   bindEvent() {

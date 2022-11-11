@@ -31,7 +31,7 @@ const selectCircle = () => {
 
 <template>
   <div
-    class="cw-draw-tools cw-fixed cw-top-1/2 cw-left-[20px] cw-bg-primary-black cw-rounded cw-p-2"
+    class="cw-draw-tools cw-fixed cw-top-1/2 cw-left-[20px] cw-bg-primary-black cw-rounded cw-py-2"
   >
     <n-space vertical>
       <n-button size="large" quaternary @click="selectArrowUpLeft">

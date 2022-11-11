@@ -3,6 +3,7 @@ type State = {
   joinBoardVisible: boolean;
   inputValue: string;
   loading: boolean;
+  roomList: string[];
 };
 
 type LoginData = {
@@ -11,8 +12,12 @@ type LoginData = {
   rooms: string[];
 };
 
-type CreateBoardData = {
+type CreateRoomData = {
   roomId: string;
 };
 
-export type { State, LoginData, CreateBoardData };
+type RoomListData = {
+  rooms: string[];
+};
+
+export type { State, LoginData, CreateRoomData, RoomListData };
