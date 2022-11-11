@@ -2,7 +2,7 @@
 import { reactive, ref, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import ws from '@/websocket/events';
-import DrawTools from '../../components/DrawTools/index.vue';
+import DrawTools from '@/components/DrawTools/index.vue';
 
 // Component
 import {
@@ -29,6 +29,7 @@ import { State } from './types';
 
 // Class
 import Board from './class/Board';
+import { ElementType } from '@/elements';
 
 const router = useRouter();
 
@@ -87,6 +88,7 @@ onMounted(() => {
           board.isMouseDown = false;
           board.mouseDownX = 0;
           board.mouseDownY = 0;
+          if (board.elements.activeElement.type === ElementType.Text) return;
           board.elements.cancelActiveElement();
         }
       }
