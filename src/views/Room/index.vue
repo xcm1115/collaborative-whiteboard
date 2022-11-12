@@ -14,41 +14,64 @@ import {
   NIcon,
   NInputGroup,
   NInput,
-  NPopover,
   NRadioGroup,
-  NRadio,
-  NSpace,
   NRadioButton,
+  NAvatarGroup,
+  NDropdown,
+  useMessage,
 } from 'naive-ui';
 import {
   ArrowLeft24Regular as ArrowLeft,
   Share24Filled as Share,
   Edit24Filled as Edit,
   Checkmark24Regular as Checkmark,
-  PeopleSettings24Filled as PeopleSettings,
   Add24Regular as Add,
-  Subtract24Regular as Subtract,
+  MoreHorizontal24Regular as MoreHorizontal,
 } from '@vicons/fluent';
 import DrawTools from '@/components/DrawTools/index.vue';
 
-// Draw
-import { drawRectangle } from './class/Draw';
-
 // Type
 import { Message } from '@/websocket/types';
-import { State } from './types';
+import { User, State } from './types';
 
 // Class
 import Board from './class/Board';
+import { drawRectangle } from './class/Draw';
+import { importFromJson } from './class/import';
+import { exportJson } from './class/Export';
 
 const store = mainStore();
-const { userId, ws, roomId } = storeToRefs(store);
+const { userId, userName, userAvatar, ws, roomId } = storeToRefs(store);
 
 const router = useRouter();
 
+const message = useMessage();
+
+const modeOptions = [
+  {
+    label: '协作模式',
+    key: 'cooperation',
+  },
+  {
+    label: '阅读模式',
+    key: 'read',
+  },
+];
+const moreOptions = [
+  {
+    label: '从 JSON 导入',
+    key: 'import',
+  },
+  {
+    label: '导出 JSON',
+    key: 'json',
+  },
+];
+
+const userList = ref<User[]>([]);
 const container = ref<HTMLDivElement | null>(null);
 const roomName = ref<string>('新建白板');
-const roomMode = ref<string>('read-only');
+const roomMode = ref<string>('cooperation');
 const tabsRef = ref([
   {
     value: '白板 1',
@@ -61,10 +84,17 @@ const currentBoard = ref<Board | null>(null);
 
 const state: State = reactive({
   isEditingBoardName: false,
+  userList: [],
 });
 
 const init = async () => {
   if (!ws.value && userId.value) {
+    userList.value.push({
+      userId: userId.value,
+      userName: userName.value,
+      src: userAvatar.value,
+    });
+
     ws.value = new WS();
     ws.value.createWebSocket(roomId.value, userId.value);
 
@@ -76,45 +106,60 @@ const init = async () => {
 };
 
 const wsOnOpen = () => {
-  ws.value!.instance?.addEventListener('open', () => {
-    const msg: Message = {
-      userId: userId.value!,
-      roomId: roomId.value!,
-      operation: 'join',
-      data: null,
-    };
-    ws.value!.instance?.send(JSON.stringify(msg));
-  });
+  if (ws.value) {
+    ws.value.instance?.addEventListener('open', () => {
+      const msg: Message = {
+        userId: userId.value!,
+        roomId: roomId.value!,
+        operation: 'join',
+        data: {
+          userName: userName.value!,
+          userAvatar: userAvatar.value,
+        },
+      };
+      ws.value!.instance?.send(JSON.stringify(msg));
+    });
+  }
 };
 
 const wsOnMessage = () => {
-  ws.value!.instance?.addEventListener('message', async (event) => {
-    const msg = await JSON.parse(event.data);
+  if (ws.value) {
+    ws.value!.instance?.addEventListener('message', async (event) => {
+      const msg = await JSON.parse(event.data);
 
-    if (msg.userId && msg.userId !== userId.value) {
-      switch (msg.operation) {
-        case 'join':
-          break;
-        case 'draw':
-          drawRectangle(
-            currentBoard.value as Board,
-            msg.data.mouseDownX,
-            msg.data.mouseDownY,
-            msg.data.width,
-            msg.data.height,
-            false
-          );
-          break;
-        case 'mouseup':
-          currentBoard.value!.onMouseup();
-          break;
-        case 'leave':
-          break;
-        default:
-          break;
+      if (msg.userId && msg.userId !== userId.value) {
+        switch (msg.operation) {
+          case 'join':
+            userList.value.push({
+              userId: msg.userId,
+              userName: msg.data.userName,
+              src: msg.data.userAvatar,
+            });
+            break;
+          case 'draw':
+            drawRectangle(
+              currentBoard.value as Board,
+              msg.data.mouseDownX,
+              msg.data.mouseDownY,
+              msg.data.width,
+              msg.data.height,
+              false
+            );
+            break;
+          case 'mouseup':
+            currentBoard.value!.isMouseDown = false;
+            currentBoard.value!.mouseDownX = 0;
+            currentBoard.value!.mouseDownY = 0;
+            currentBoard.value!.elements.cancelActiveElement();
+            break;
+          case 'leave':
+            break;
+          default:
+            break;
+        }
       }
-    }
-  });
+    });
+  }
 };
 
 const backToHome = () => {
@@ -123,7 +168,41 @@ const backToHome = () => {
   });
 };
 
+const handleModeSelect = (key: string) => {
+  roomMode.value = key;
+
+  switch (key) {
+    case 'cooperation':
+      break;
+    case 'read':
+      currentBoard.value!.elements.cancelActiveElement();
+      currentBoard.value!.setDrawType('');
+      break;
+    default:
+      break;
+  }
+};
+
+const handleMoreSelect = (key: string) => {
+  if (currentBoard.value) {
+    switch (key) {
+      case 'import':
+        importFromJson(currentBoard.value as Board);
+        break;
+      case 'json':
+        exportJson(currentBoard.value as Board);
+        break;
+      default:
+        break;
+    }
+  }
+};
+
 const curDrawTool = (drawTool: string) => {
+  if (roomMode.value === 'read') {
+    return;
+  }
+
   currentBoard.value!.setDrawType(drawTool);
 };
 
@@ -171,12 +250,15 @@ onMounted(async () => {
 });
 
 onUnmounted(() => {
-  ws.value!.sendWsMsg(userId.value!, roomId.value!, 'leave', null);
-  ws.value!.closeWebSocket();
+  if (ws.value) {
+    ws.value!.sendWsMsg(userId.value!, roomId.value!, 'leave', null);
+    ws.value!.closeWebSocket();
+  }
 });
 </script>
 
 <template>
+  <!-- TODO: 拆分组件 -->
   <div
     class="cw-w-full cw-fixed cw-top-0 cw-left-0 cw-z-50 cw-flex cw-justify-between cw-items-center cw-px-6 cw-py-4 cw-border-b cw-bg-white"
   >
@@ -215,26 +297,9 @@ onUnmounted(() => {
 
     <span class="cw-flex cw-items-center">
       <span class="cw-mr-6">
-        <n-popover trigger="click">
-          <template #trigger>
-            <n-button>
-              <template #icon>
-                <n-icon>
-                  <PeopleSettings />
-                </n-icon>
-              </template>
-            </n-button>
-          </template>
-
-          <n-radio-group v-model:value="roomMode" name="radiogroup">
-            <div class="cw-flex cw-flex-col">
-              <n-space vertical>
-                <n-radio value="collaboration"> 协作模式 </n-radio>
-                <n-radio value="read-only"> 只读模式 </n-radio>
-              </n-space>
-            </div>
-          </n-radio-group>
-        </n-popover>
+        <n-dropdown trigger="hover" :options="modeOptions" @select="handleModeSelect">
+          <n-button>{{ roomMode === 'cooperation' ? '协作模式' : '阅读模式' }} </n-button>
+        </n-dropdown>
       </span>
 
       <n-button type="primary" icon-placement="right">
@@ -245,6 +310,18 @@ onUnmounted(() => {
         </template>
         分享
       </n-button>
+
+      <span class="cw-mx-4">
+        <n-dropdown trigger="hover" :options="moreOptions" @select="handleMoreSelect">
+          <n-button quaternary>
+            <n-icon size="24">
+              <MoreHorizontal />
+            </n-icon>
+          </n-button>
+        </n-dropdown>
+      </span>
+
+      <n-avatar-group :options="userList" :size="40" :max="3" />
     </span>
   </div>
 
@@ -255,10 +332,10 @@ onUnmounted(() => {
     ></div>
   </div>
 
-  <DrawTools @change-draw-tool="curDrawTool" />
+  <DrawTools v-if="roomMode === 'cooperation'" @change-draw-tool="curDrawTool" />
 
-  <!-- TODO: 拆成组件 -->
-  <span class="cw-tabs cw-fixed cw-bottom-[20px] cw-flex cw-items-center">
+  <!-- TODO: 拆分组件 -->
+  <span class="cw-tabs cw-fixed cw-top-[110px] cw-flex cw-items-center">
     <n-radio-group
       v-model:value="currentTab"
       class="cw-mr-2"

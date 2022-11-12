@@ -9,7 +9,13 @@ import Diamond from '@/elements/Diamond';
 import BaseLineElement from '@/elements/BaseLineElement';
 import Text from '@/elements/Text';
 import { ElementType } from '@/elements';
-// import Options from '@/elements/BaseElement';
+import { storeToRefs } from 'pinia';
+
+// Store
+import { mainStore } from '@/store';
+
+const store = mainStore();
+const { userId } = storeToRefs(store);
 
 class Elements {
   private board: Board;
@@ -20,6 +26,15 @@ class Elements {
     this.board = board;
     this.elementList = [];
     this.activeElement = null;
+  }
+
+  // 序列化当前白板上的所有元素
+  serialize(stringify = false) {
+    const data = this.elementList.map((element) => {
+      return element.serialize();
+    });
+
+    return stringify ? JSON.stringify(data) : data;
   }
 
   // 添加元素
@@ -49,6 +64,12 @@ class Elements {
       }
     }
     return this;
+  }
+
+  // 删除全部元素
+  deleteAllElements() {
+    this.activeElement = null;
+    this.elementList = [];
   }
 
   // 获取元素在元素列表里的索引
@@ -85,6 +106,27 @@ class Elements {
       this.addElement(element!);
       this.setActiveElement(element!);
     }
+  }
+
+  // 单纯创建元素
+  pureCreateElement(opts: BaseElement) {
+    switch (opts.type) {
+      case ElementType.Rectangle:
+        return new Rectangle(userId.value!, this.board, opts);
+      default:
+        return null;
+    }
+  }
+
+  // 根据元素数据创建元素
+  createElementsFromData(elements: BaseElement[]) {
+    elements.forEach((item) => {
+      const element = this.pureCreateElement(item);
+
+      if (element) {
+        this.addElement(element);
+      }
+    });
   }
 
   // 曲线

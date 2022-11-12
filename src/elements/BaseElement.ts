@@ -1,4 +1,4 @@
-import Board from '@/views/Board/class/Board';
+import Board from '@/views/Room/class/Board';
 import { ElementType } from '.';
 
 type Options = {
@@ -33,10 +33,11 @@ class BaseElement {
   // 序列化
   serialize() {
     return {
+      type: this.type,
       width: this.width,
       height: this.height,
-      x: this.mouseDownX,
-      y: this.mouseDownY,
+      mouseDownX: this.mouseDownX,
+      mouseDownY: this.mouseDownY,
     };
   }
 

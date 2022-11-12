@@ -1,3 +1,4 @@
+import BaseElement from '@/elements/BaseElement';
 import Elements from './Elements';
 import { ElementType } from '@/elements';
 import Render from './Render';
@@ -24,7 +25,7 @@ class Board {
   public board: HTMLCanvasElement = document.createElement('canvas');
   public ctx: CanvasRenderingContext2D = this.board.getContext('2d')!;
   public elements: Elements;
-  private render: Render;
+  public render: Render;
   private drawType: ElementType;
   private textEdit: TextEdit;
 
@@ -56,6 +57,9 @@ class Board {
 
   setDrawType(drawType: string) {
     switch (drawType) {
+      case ElementType.Arrow:
+        this.drawType = ElementType.Arrow;
+        break;
       case ElementType.SmoothLine:
         this.drawType = ElementType.SmoothLine;
 
@@ -112,6 +116,20 @@ class Board {
     this.container.appendChild(this.board);
   }
 
+  // 设置元素数据
+  async setData({ elements = [] }) {
+    this.elements.deleteAllElements();
+    this.elements.createElementsFromData(elements);
+    this.render.render();
+  }
+
+  // 获取数据，包括状态数据及元素数据
+  getData() {
+    return {
+      elements: this.elements.serialize(),
+    };
+  }
+
   onMousedown(e: MouseEvent) {
     this.isMouseDown = true;
     this.mouseDownX = e.clientX;
@@ -123,10 +141,14 @@ class Board {
       return;
     }
 
+    if (this.drawType === ElementType.Arrow) {
+      return;
+    }
+
     switch (this.drawType) {
       case ElementType.SmoothLine:
         this.elements.createSmoothLine(
-          this.userId,
+          userId.value!,
           this.mouseDownX,
           this.mouseDownY,
           e.clientX - this.mouseDownX,
@@ -137,7 +159,7 @@ class Board {
         break;
       case ElementType.StraightLine:
         this.elements.createStraightLine(
-          this.userId,
+          userId.value!,
           this.mouseDownX,
           this.mouseDownY,
           e.clientX - this.mouseDownX,
@@ -158,7 +180,7 @@ class Board {
         break;
       case ElementType.Circle:
         this.elements.createCircle(
-          this.userId,
+          userId.value!,
           this.mouseDownX,
           this.mouseDownY,
           e.clientX - this.mouseDownX,
@@ -168,7 +190,7 @@ class Board {
         break;
       case ElementType.Triangle:
         this.elements.createTriangle(
-          this.userId,
+          userId.value!,
           this.mouseDownX,
           this.mouseDownY,
           e.clientX - this.mouseDownX,
@@ -178,7 +200,7 @@ class Board {
         break;
       case ElementType.Diamond:
         this.elements.createDiamond(
-          this.userId,
+          userId.value!,
           this.mouseDownX,
           this.mouseDownY,
           e.clientX - this.mouseDownX,
@@ -204,7 +226,7 @@ class Board {
       height: e.clientY - this.mouseDownY,
     };
 
-    this.sendWsMsg(this.userId, 'draw', data);
+    ws.value!.sendWsMsg(userId.value!, roomId.value, 'draw', data);
   }
 
   onMouseup(e?: MouseEvent) {
@@ -241,7 +263,7 @@ class Board {
       width: e.clientX - this.mouseDownX,
       height: e.clientY - this.mouseDownY,
     };
-    this.elements.createElement(this.userId, data);
+    this.elements.createElement(userId.value!, data);
     this.elements.activeElement?.updateSize(
       e.clientX - this.mouseDownX,
       e.clientY - this.mouseDownY

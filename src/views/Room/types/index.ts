@@ -1,5 +1,11 @@
+type User = {
+  userId: string;
+  userName: string;
+  src: string;
+};
+
 type State = {
   isEditingBoardName: boolean;
 };
 
-export type { State };
+export type { User, State };

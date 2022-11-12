@@ -26,8 +26,7 @@
     "qs": "^6.11.0",
     "sass": "^1.55.0",
     "vue": "^3.2.41",
-    "vue-router": "4",
-    "ws": "^8.10.0"
+    "vue-router": "4"
   },
   "devDependencies": {
     "@commitlint/cli": "^17.1.2",
