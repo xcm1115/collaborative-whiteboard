@@ -1,6 +1,6 @@
-import Board from '@/views/Board/class/Board';
+import Board from '@/views/Room/class/Board';
 import BaseElement from './BaseElement';
-import ws from '@/websocket/events';
+import { GraphOptions } from './index';
 
 // type Options = {
 //   type: ElementType;
@@ -15,7 +15,7 @@ class Triangle extends BaseElement {
   private startX = 0;
   private startY = 0;
 
-  constructor(userId: string, board: Board, options: any) {
+  constructor(userId: string, board: Board, options: GraphOptions) {
     super(userId, board, options);
 
     this.startX = this.mouseDownX - this.board.width / 2;

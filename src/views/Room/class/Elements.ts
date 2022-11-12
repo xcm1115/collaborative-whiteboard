@@ -1,5 +1,6 @@
 import Board from './Board';
 import BaseElement from '@/elements/BaseElement';
+import Options from '@/elements/BaseElement';
 import Rectangle from '@/elements/Rectangle';
 import Triangle from '@/elements/Triangle';
 import Circle from '@/elements/Circle';
@@ -79,7 +80,7 @@ class Elements {
     });
   }
 
-  createElementByType(userId: string, options: any) {
+  createElementByType(userId: string, options: Options) {
     switch (options.type) {
       case ElementType.SmoothLine:
         return new SmoothLine(userId, this.board, options);
@@ -100,7 +101,7 @@ class Elements {
     }
   }
 
-  createElement(userId: string, options: any) {
+  createElement(userId: string, options: Record<string, unknown>) {
     if (!this.activeElement) {
       const element = this.createElementByType(userId, options);
       this.addElement(element!);

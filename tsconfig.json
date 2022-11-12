@@ -18,6 +18,12 @@
     },
     "types": ["naive-ui/volar"]
   },
-  "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx", "src/**/*.vue", "src/elements/StraightLine.ts"],
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.d.ts",
+    "src/**/*.tsx",
+    "src/**/*.vue",
+    "src/elements/StraightLine.ts"
+  ],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

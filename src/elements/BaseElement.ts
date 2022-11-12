@@ -1,13 +1,6 @@
 import Board from '@/views/Room/class/Board';
 import { ElementType } from '.';
-
-type Options = {
-  type: ElementType;
-  mouseDownX: number;
-  mouseDownY: number;
-  width: number;
-  height: number;
-};
+import { GraphOptions } from './index';
 
 class BaseElement {
   private userId: string;
@@ -18,7 +11,7 @@ class BaseElement {
   public height: number;
   public type: ElementType;
 
-  constructor(userId: string, board: Board, options: Options) {
+  constructor(userId: string, board: Board, options: GraphOptions) {
     this.userId = userId;
     this.board = board;
     this.type = options.type;

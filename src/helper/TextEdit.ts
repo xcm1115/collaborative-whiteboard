@@ -1,4 +1,4 @@
-import Board from '@/views/Board/class/Board';
+import Board from '@/views/Room/class/Board';
 // import { getTextElementSize } from '@/utils';
 import Text from '@/elements/Text';
 

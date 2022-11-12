@@ -12,6 +12,16 @@ export enum ElementType {
   Text = 'Text',
 }
 
+type GraphOptions = {
+  type: ElementType;
+  mouseDownX: number;
+  mouseDownY: number;
+  width: number;
+  height: number;
+};
+
+export type { GraphOptions };
+
 export default {
   BaseElement,
   Rectangle,
