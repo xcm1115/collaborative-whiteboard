@@ -32,6 +32,7 @@ import {
   MoreHorizontal24Regular as MoreHorizontal,
 } from '@vicons/fluent';
 import DrawTools from '@/components/DrawTools/index.vue';
+import { ElementType } from '@/elements';
 
 // Type
 import { Message } from '@/websocket/types';
@@ -187,11 +188,11 @@ const handleModeSelect = (key: string) => {
 
   switch (key) {
     case 'cooperation':
-      currentBoard.value!.setDrawType('');
+      currentBoard.value!.setDrawType(ElementType.Arrow);
       break;
     case 'read':
       currentBoard.value!.elements.cancelActiveElement();
-      currentBoard.value!.setDrawType('');
+      currentBoard.value!.setDrawType(ElementType.Arrow);
       break;
     default:
       break;
@@ -233,7 +234,7 @@ const curDrawTool = (drawTool: string) => {
   }
 
   if (currentBoard.value) {
-    currentBoard.value.setDrawType(drawTool);
+    currentBoard.value.setDrawType(drawTool as ElementType);
   }
 };
 

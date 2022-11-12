@@ -1,4 +1,5 @@
 import Board from './Board';
+import { ElementType, GraphOptions } from '@/elements';
 import BaseElement from '@/elements/BaseElement';
 import Rectangle from '@/elements/Rectangle';
 import Triangle from '@/elements/Triangle';
@@ -8,7 +9,6 @@ import StraightLine from '@/elements/StraightLine';
 import Diamond from '@/elements/Diamond';
 import BaseLineElement from '@/elements/BaseLineElement';
 import Text from '@/elements/Text';
-import { ElementType } from '@/elements';
 import { storeToRefs } from 'pinia';
 
 // Type
@@ -82,7 +82,7 @@ class Elements {
     });
   }
 
-  createElementByType(userId: string, options: DrawOptions) {
+  createElementByType(userId: string, options: GraphOptions) {
     switch (options.type) {
       case ElementType.SmoothLine:
         return new SmoothLine(userId, this.board, options);
@@ -103,7 +103,7 @@ class Elements {
     }
   }
 
-  createElement(userId: string, options: DrawOptions) {
+  createElement(userId: string, options: GraphOptions) {
     if (!this.activeElement) {
       const element = this.createElementByType(userId, options);
       this.addElement(element!);
@@ -256,26 +256,6 @@ class Elements {
     this.createElement(userId, data);
     this.activeElement?.updateSize(width, height);
   }
-
-  // // 创建文字
-  // createText(
-  //   userId: string,
-  //   mouseDownX: number,
-  //   mouseDownY: number,
-  //   width: number,
-  //   height: number
-  // ) {
-  //   const data = {
-  //     type: ElementType.Text,
-  //     mouseDownX,
-  //     mouseDownY,
-  //     width,
-  //     height,
-  //   };
-
-  //   this.createElement(userId, data);
-  //   this.activeElement?.updateSize(width, height);
-  // }
 
   // 正在编辑文本元素
   // editingText(element: BaseElement) {
