@@ -133,7 +133,7 @@ const drawTextElement = (options: DrawOptions) => {
   };
   board.elements.createElement(userId.value!, data);
   board.elements.activeElement?.updateSize(width, height);
-  board.render.render();
+  // board.render.render();
 
   if (isSync) {
     const data = {

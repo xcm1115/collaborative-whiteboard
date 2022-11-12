@@ -11,41 +11,42 @@ import {
   TextT28Filled as Text,
 } from '@vicons/fluent';
 import { Carbon3DCurveAutoColon as SmoothLine } from '@vicons/carbon';
+import { ElementType } from '@/elements';
 
 const emits = defineEmits<{
   (e: 'changeDrawTool', value: string): void;
 }>();
 
 const selectArrowUpLeft = () => {
-  emits('changeDrawTool', 'Arrow');
+  emits('changeDrawTool', ElementType.Arrow);
 };
 
 const selectRectangle = () => {
-  emits('changeDrawTool', 'Rectangle');
+  emits('changeDrawTool', ElementType.Rectangle);
 };
 
 const selectTriangle = () => {
-  emits('changeDrawTool', 'Triangle');
+  emits('changeDrawTool', ElementType.Triangle);
 };
 
 const selectCircle = () => {
-  emits('changeDrawTool', 'Circle');
+  emits('changeDrawTool', ElementType.Circle);
 };
 
 const selectSmoothLine = () => {
-  emits('changeDrawTool', 'SmoothLine');
+  emits('changeDrawTool', ElementType.SmoothLine);
 };
 
 const selectStraightLine = () => {
-  emits('changeDrawTool', 'StraightLine');
+  emits('changeDrawTool', ElementType.StraightLine);
 };
 
 const selectDiamond = () => {
-  emits('changeDrawTool', 'Diamond');
+  emits('changeDrawTool', ElementType.Diamond);
 };
 
 const selectText = () => {
-  emits('changeDrawTool', 'Text');
+  emits('changeDrawTool', ElementType.Text);
 };
 </script>
 

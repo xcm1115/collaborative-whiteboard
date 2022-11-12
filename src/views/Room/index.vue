@@ -31,6 +31,7 @@ import {
   Subtract24Regular as Subtract,
 } from '@vicons/fluent';
 import DrawTools from '@/components/DrawTools/index.vue';
+import { ElementType } from '@/elements';
 
 // Draw
 import { drawRectangle } from './class/Draw';
@@ -125,7 +126,7 @@ const backToHome = () => {
   });
 };
 
-const curDrawTool = (drawTool: string) => {
+const curDrawTool = (drawTool: ElementType) => {
   currentBoard.value!.setDrawType(drawTool);
 };
 

@@ -8,8 +8,7 @@ import StraightLine from '@/elements/StraightLine';
 import Diamond from '@/elements/Diamond';
 import BaseLineElement from '@/elements/BaseLineElement';
 import Text from '@/elements/Text';
-import { ElementType } from '@/elements';
-import Options from '@/elements/BaseElement';
+import { ElementType, GraphOptions } from '@/elements';
 
 class Elements {
   private board: Board;
@@ -58,7 +57,7 @@ class Elements {
     });
   }
 
-  createElementByType(userId: string, options: Options) {
+  createElementByType(userId: string, options: GraphOptions) {
     switch (options.type) {
       case ElementType.SmoothLine:
         return new SmoothLine(userId, this.board, options);
@@ -79,7 +78,7 @@ class Elements {
     }
   }
 
-  createElement(userId: string, options: Options) {
+  createElement(userId: string, options: GraphOptions) {
     if (!this.activeElement) {
       const element = this.createElementByType(userId, options);
       this.addElement(element!);
@@ -211,26 +210,6 @@ class Elements {
     this.createElement(userId, data);
     this.activeElement?.updateSize(width, height);
   }
-
-  // // 创建文字
-  // createText(
-  //   userId: string,
-  //   mouseDownX: number,
-  //   mouseDownY: number,
-  //   width: number,
-  //   height: number
-  // ) {
-  //   const data = {
-  //     type: ElementType.Text,
-  //     mouseDownX,
-  //     mouseDownY,
-  //     width,
-  //     height,
-  //   };
-
-  //   this.createElement(userId, data);
-  //   this.activeElement?.updateSize(width, height);
-  // }
 
   // 正在编辑文本元素
   // editingText(element: BaseElement) {

@@ -50,55 +50,17 @@ class Board {
 
     this.elements = new Elements(this);
     this.render = new Render(this);
+    this.textEdit = new TextEdit(this);
 
     this.initBoard();
     this.bindEvent();
 
     // 默认箭头状态
     this.drawType = ElementType.Arrow;
-
-    // 文字编辑类
-    this.textEdit = new TextEdit(this);
-    this.textEdit.bindCallBack = this.onTextInputBlur;
-    // this.textEdit.on('blur', this.onTextInputBlur, this);
   }
 
-  setDrawType(drawType: string) {
-    switch (drawType) {
-      case ElementType.SmoothLine:
-        this.drawType = ElementType.SmoothLine;
-
-        break;
-      case ElementType.StraightLine:
-        this.drawType = ElementType.StraightLine;
-
-        break;
-
-      case ElementType.Rectangle:
-        this.drawType = ElementType.Rectangle;
-
-        break;
-      case ElementType.Circle:
-        this.drawType = ElementType.Circle;
-
-        break;
-      case ElementType.Triangle:
-        this.drawType = ElementType.Triangle;
-
-        break;
-      case ElementType.Diamond:
-        this.drawType = ElementType.Diamond;
-
-        break;
-      case ElementType.Text:
-        this.drawType = ElementType.Text;
-
-        break;
-
-      default:
-        this.drawType = ElementType.Arrow;
-        break;
-    }
+  setDrawType(drawType: ElementType) {
+    this.drawType = drawType;
   }
 
   getContainerInfo() {
@@ -119,6 +81,24 @@ class Board {
     this.getContainerInfo();
     this.createBoard();
     this.container.appendChild(this.board);
+  }
+
+  onMouseDbclick(e: MouseEvent) {
+    this.isMouseDown = true;
+    this.mouseDownX = e.clientX;
+    this.mouseDownY = e.clientY;
+    //绘制文字时，显示编辑框
+    if (this.drawType === ElementType.Text) {
+      const options = {
+        board: this,
+        mouseDownX: this.mouseDownX,
+        mouseDownY: this.mouseDownY,
+        width: e.clientX - this.mouseDownX,
+        height: e.clientY - this.mouseDownY,
+        isSync: true,
+      };
+      this.createTextElement(options);
+    }
   }
 
   onMousedown(e: MouseEvent) {
@@ -164,10 +144,10 @@ class Board {
         drawDiamond(options);
 
         break;
-      case ElementType.Text:
-        this.createTextElement(options);
+      // case ElementType.Text:
+      //   this.createTextElement(options);
 
-        break;
+      //   break;
 
       default:
         break;
@@ -189,14 +169,7 @@ class Board {
     this.board.addEventListener('mousedown', this.onMousedown.bind(this));
     this.board.addEventListener('mousemove', this.onMousemove.bind(this));
     this.board.addEventListener('mouseup', this.onMouseup.bind(this));
-  }
-
-  // 文本框失焦事件
-  onTextInputBlur() {
-    // this.keyCommand.bindEvent();
-    this.elements.completeEditingText();
-    this.render.render();
-    // this.emitChange();
+    this.board.addEventListener('dblclick', this.onMouseDbclick.bind(this));
   }
 
   // 创建文本元素

@@ -2,16 +2,11 @@ import Board from '@/views/Room/class/Board';
 // import { getTextElementSize } from '@/utils';
 import Text from '@/elements/Text';
 
-interface CallBack {
-  (): void;
-}
-
 // 文本编辑类
 class TextEdit {
   private editable: any;
   private isEditing: boolean;
   private board: Board;
-  private callback: CallBack | null;
 
   constructor(own: Board) {
     this.board = own;
@@ -19,12 +14,8 @@ class TextEdit {
     this.isEditing = false;
     this.onTextInput = this.onTextInput.bind(this);
     this.onTextBlur = this.onTextBlur.bind(this);
-    this.callback = null;
   }
 
-  bindCallBack(callback: CallBack) {
-    this.callback = callback;
-  }
   // 创建文本输入框元素
   crateTextInputEl() {
     this.editable = document.createElement('textarea');
@@ -32,10 +23,12 @@ class TextEdit {
     this.editable.tabIndex = 0;
     this.editable.wrap = 'off';
     this.editable.className = 'textInput';
+    const startX = this.board.elements.activeElement?.mouseDownY || 0 - this.board.width / 2;
+    const startY = this.board.elements.activeElement?.mouseDownX || 0 - this.board.height / 2;
     Object.assign(this.editable.style, {
       position: 'absolute',
-      top: '200px',
-      right: '20px',
+      top: `${startX}px`,
+      left: `${startY}px`,
       display: 'block',
       minHeight: '1em',
       backfaceVisibility: 'hidden',
@@ -69,10 +62,11 @@ class TextEdit {
 
   // 文本框失焦事件
   onTextBlur() {
+    this.board.elements.completeEditingText();
+    this.board.elements.cancelActiveElement();
+    this.board.render.render();
     this.editable.style.display = 'none';
     this.editable.value = '';
-    // this.emit('blur');
-    this.callback && this.callback();
     this.isEditing = false;
   }
 
@@ -81,7 +75,11 @@ class TextEdit {
     if (!this.editable) {
       this.crateTextInputEl();
     } else {
+      const startX = this.board.elements.activeElement?.mouseDownY || 0 - this.board.width / 2;
+      const startY = this.board.elements.activeElement?.mouseDownX || 0 - this.board.height / 2;
       this.editable.style.display = 'block';
+      this.editable.style.top = `${startX}px`;
+      this.editable.style.left = `${startY}px`;
     }
     // this.updateTextInputStyle();
     this.editable.focus();
