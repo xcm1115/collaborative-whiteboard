@@ -1,13 +1,13 @@
-import Board from '@/views/Board/class/Board';
+import Board from '@/views/Room/class/Board';
 import BaseElement from './BaseElement';
-import Options from '@/elements/BaseElement';
+import { GraphOptions } from './index';
 
 class BaseLineElement extends BaseElement {
   protected startPointArr: [];
   protected pointArr: number[][];
   protected fictitiousPoint: Record<string, number>;
 
-  constructor(userId: string, board: Board, options: Options) {
+  constructor(userId: string, board: Board, options: GraphOptions) {
     super(userId, board, options);
     // 记录初始点位，在拖动时
     this.startPointArr = [];

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { reactive, ref, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
+// import { DrawOptions } from './types';
 import WS from '@/websocket';
 
 import { storeToRefs } from 'pinia';
@@ -90,20 +91,21 @@ const wsOnOpen = () => {
 const wsOnMessage = () => {
   ws.value!.instance?.addEventListener('message', async (event) => {
     const msg = await JSON.parse(event.data);
+    const options = {
+      board: currentBoard.value as Board,
+      mouseDownX: msg.data.mouseDownX,
+      mouseDownY: msg.data.mouseDownY,
+      width: msg.data.width,
+      height: msg.data.height,
+      isSync: false,
+    };
 
     if (msg.userId && msg.userId !== userId.value) {
       switch (msg.operation) {
         case 'join':
           break;
         case 'draw':
-          drawRectangle(
-            currentBoard.value as Board,
-            msg.data.mouseDownX,
-            msg.data.mouseDownY,
-            msg.data.width,
-            msg.data.height,
-            false
-          );
+          drawRectangle(options);
           break;
         case 'mouseup':
           currentBoard.value!.onMouseup();

@@ -1,15 +1,6 @@
-import Board from '@/views/Board/class/Board';
+import Board from '@/views/Room/class/Board';
 import BaseLineElement from './BaseLineElement';
-// import { transform } from '@/utils';
-import ws from '@/websocket/events';
-
-// type Options = {
-//   type: ElementType;
-//   x: number;
-//   y: number;
-//   width: number;
-//   height: number;
-// };
+// import { GraphOptions } from './index';
 
 // 自由曲线类
 class SmoothLine extends BaseLineElement {

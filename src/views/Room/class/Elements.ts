@@ -9,7 +9,7 @@ import Diamond from '@/elements/Diamond';
 import BaseLineElement from '@/elements/BaseLineElement';
 import Text from '@/elements/Text';
 import { ElementType } from '@/elements';
-// import Options from '@/elements/BaseElement';
+import Options from '@/elements/BaseElement';
 
 class Elements {
   private board: Board;
@@ -58,7 +58,7 @@ class Elements {
     });
   }
 
-  createElementByType(userId: string, options: any) {
+  createElementByType(userId: string, options: Options) {
     switch (options.type) {
       case ElementType.SmoothLine:
         return new SmoothLine(userId, this.board, options);
@@ -79,7 +79,7 @@ class Elements {
     }
   }
 
-  createElement(userId: string, options: any) {
+  createElement(userId: string, options: Options) {
     if (!this.activeElement) {
       const element = this.createElementByType(userId, options);
       this.addElement(element!);

@@ -2,12 +2,21 @@ import Elements from './Elements';
 import { ElementType } from '@/elements';
 import Render from './Render';
 import { storeToRefs } from 'pinia';
+import { DrawOptions } from '../types';
 
 // Store
 import { mainStore } from '@/store';
 
 // Draw
-import { drawRectangle } from './Draw';
+import {
+  drawRectangle,
+  drawCircle,
+  drawDiamond,
+  drawSmoothLine,
+  drawStraightLine,
+  drawTextElement,
+  drawTriangle,
+} from './Draw';
 import TextEdit from '@/helper/TextEdit';
 
 type Option = {
@@ -24,7 +33,7 @@ class Board {
   public board: HTMLCanvasElement = document.createElement('canvas');
   public ctx: CanvasRenderingContext2D = this.board.getContext('2d')!;
   public elements: Elements;
-  private render: Render;
+  public render: Render;
   private drawType: ElementType;
   private textEdit: TextEdit;
 
@@ -122,89 +131,47 @@ class Board {
     if (!this.isMouseDown) {
       return;
     }
+    const options = {
+      board: this,
+      mouseDownX: this.mouseDownX,
+      mouseDownY: this.mouseDownY,
+      width: e.clientX - this.mouseDownX,
+      height: e.clientY - this.mouseDownY,
+      isSync: true,
+    };
 
     switch (this.drawType) {
       case ElementType.SmoothLine:
-        this.elements.createSmoothLine(
-          this.userId,
-          this.mouseDownX,
-          this.mouseDownY,
-          e.clientX - this.mouseDownX,
-          e.clientY - this.mouseDownY,
-          e
-        );
+        drawSmoothLine(options, e);
 
         break;
       case ElementType.StraightLine:
-        this.elements.createStraightLine(
-          this.userId,
-          this.mouseDownX,
-          this.mouseDownY,
-          e.clientX - this.mouseDownX,
-          e.clientY - this.mouseDownY,
-          e
-        );
+        drawStraightLine(options, e);
 
         break;
       case ElementType.Rectangle:
-        drawRectangle(
-          this,
-          this.mouseDownX,
-          this.mouseDownY,
-          e.clientX - this.mouseDownX,
-          e.clientY - this.mouseDownY,
-          true
-        );
+        drawRectangle(options);
         break;
       case ElementType.Circle:
-        this.elements.createCircle(
-          this.userId,
-          this.mouseDownX,
-          this.mouseDownY,
-          e.clientX - this.mouseDownX,
-          e.clientY - this.mouseDownY
-        );
+        drawCircle(options);
 
         break;
       case ElementType.Triangle:
-        this.elements.createTriangle(
-          this.userId,
-          this.mouseDownX,
-          this.mouseDownY,
-          e.clientX - this.mouseDownX,
-          e.clientY - this.mouseDownY
-        );
+        drawTriangle(options);
 
         break;
       case ElementType.Diamond:
-        this.elements.createDiamond(
-          this.userId,
-          this.mouseDownX,
-          this.mouseDownY,
-          e.clientX - this.mouseDownX,
-          e.clientY - this.mouseDownY
-        );
+        drawDiamond(options);
 
         break;
       case ElementType.Text:
-        this.createTextElement(e);
+        this.createTextElement(options);
 
         break;
 
       default:
         break;
     }
-    this.render.render();
-
-    const data = {
-      type: this.drawType,
-      mouseDownX: this.mouseDownX,
-      mouseDownY: this.mouseDownY,
-      width: e.clientX - this.mouseDownX,
-      height: e.clientY - this.mouseDownY,
-    };
-
-    this.sendWsMsg(this.userId, 'draw', data);
   }
 
   onMouseup(e?: MouseEvent) {
@@ -233,19 +200,8 @@ class Board {
   }
 
   // 创建文本元素
-  createTextElement(e: MouseEvent) {
-    const data = {
-      type: ElementType.Text,
-      mouseDownX: this.mouseDownX,
-      mouseDownY: this.mouseDownY,
-      width: e.clientX - this.mouseDownX,
-      height: e.clientY - this.mouseDownY,
-    };
-    this.elements.createElement(this.userId, data);
-    this.elements.activeElement?.updateSize(
-      e.clientX - this.mouseDownX,
-      e.clientY - this.mouseDownY
-    );
+  createTextElement(options: DrawOptions) {
+    drawTextElement(options);
     // this.keyCommand.unBindEvent();
     this.textEdit.showTextEdit();
   }

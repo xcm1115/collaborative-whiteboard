@@ -62,6 +62,22 @@ const selectText = () => {
         </template>
       </n-button>
 
+      <n-button size="large" quaternary @click="selectSmoothLine">
+        <template #icon>
+          <n-icon size="24" color="#ffffff">
+            <SmoothLine />
+          </n-icon>
+        </template>
+      </n-button>
+
+      <n-button size="large" quaternary @click="selectStraightLine">
+        <template #icon>
+          <n-icon size="24" color="#ffffff">
+            <StraightLine />
+          </n-icon>
+        </template>
+      </n-button>
+
       <n-button size="large" quaternary @click="selectRectangle">
         <template #icon>
           <n-icon size="24" color="#ffffff">
@@ -78,41 +94,25 @@ const selectText = () => {
         </template>
       </n-button>
 
-      <n-button size="small" @click="selectRectangle">
+      <n-button size="large" quaternary @click="selectCircle">
         <template #icon>
-          <n-icon>
-            <Rectangle />
-          </n-icon>
-        </template>
-      </n-button>
-
-      <n-button size="small" @click="selectTriangle">
-        <template #icon>
-          <n-icon>
-            <Triangle />
-          </n-icon>
-        </template>
-      </n-button>
-
-      <n-button size="small" @click="selectCircle">
-        <template #icon>
-          <n-icon>
+          <n-icon size="24" color="#ffffff">
             <Circle />
           </n-icon>
         </template>
       </n-button>
 
-      <n-button size="small" @click="selectDiamond">
+      <n-button size="large" quaternary @click="selectDiamond">
         <template #icon>
-          <n-icon>
+          <n-icon size="24" color="#ffffff">
             <Diamond />
           </n-icon>
         </template>
       </n-button>
 
-      <n-button size="small" @click="selectText">
+      <n-button size="large" quaternary @click="selectText">
         <template #icon>
-          <n-icon>
+          <n-icon size="24" color="#ffffff">
             <Text />
           </n-icon>
         </template>

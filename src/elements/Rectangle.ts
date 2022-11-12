@@ -1,20 +1,13 @@
 import Board from '@/views/Room/class/Board';
 import BaseElement from './BaseElement';
-
-// type Options = {
-//   type: ElementType;
-//   x: number;
-//   y: number;
-//   width: number;
-//   height: number;
-// };
+import { GraphOptions } from './index';
 
 // 矩形元素类
 class Rectangle extends BaseElement {
   private startX = 0;
   private startY = 0;
 
-  constructor(userId: string, board: Board, options: any) {
+  constructor(userId: string, board: Board, options: GraphOptions) {
     super(userId, board, options);
 
     this.startX = this.mouseDownX - this.board.width / 2;

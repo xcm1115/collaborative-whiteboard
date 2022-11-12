@@ -1,15 +1,7 @@
-import Board from '@/views/Board/class/Board';
+import Board from '@/views/Room/class/Board';
 import BaseElement from './BaseElement';
 import { getCircleRadius } from '@/utils';
-import ws from '@/websocket/events';
-
-// type Options = {
-//   type: ElementType;
-//   x: number;
-//   y: number;
-//   width: number;
-//   height: number;
-// };
+import { GraphOptions } from './index';
 
 // 原型元素类
 class Circle extends BaseElement {
@@ -17,7 +9,7 @@ class Circle extends BaseElement {
   private startY = 0;
   private radius = 0;
 
-  constructor(userId: string, board: Board, options: any) {
+  constructor(userId: string, board: Board, options: GraphOptions) {
     super(userId, board, options);
 
     this.startX = this.mouseDownX - this.board.width / 2;
