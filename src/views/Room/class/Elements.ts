@@ -1,6 +1,5 @@
 import Board from './Board';
 import BaseElement from '@/elements/BaseElement';
-import Options from '@/elements/BaseElement';
 import Rectangle from '@/elements/Rectangle';
 import Triangle from '@/elements/Triangle';
 import Circle from '@/elements/Circle';
@@ -11,6 +10,9 @@ import BaseLineElement from '@/elements/BaseLineElement';
 import Text from '@/elements/Text';
 import { ElementType } from '@/elements';
 import { storeToRefs } from 'pinia';
+
+// Type
+import { DrawOptions } from '@/views/Room/types';
 
 // Store
 import { mainStore } from '@/store';
@@ -80,7 +82,7 @@ class Elements {
     });
   }
 
-  createElementByType(userId: string, options: Options) {
+  createElementByType(userId: string, options: DrawOptions) {
     switch (options.type) {
       case ElementType.SmoothLine:
         return new SmoothLine(userId, this.board, options);
@@ -101,7 +103,7 @@ class Elements {
     }
   }
 
-  createElement(userId: string, options: Record<string, unknown>) {
+  createElement(userId: string, options: DrawOptions) {
     if (!this.activeElement) {
       const element = this.createElementByType(userId, options);
       this.addElement(element!);

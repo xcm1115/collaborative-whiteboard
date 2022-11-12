@@ -1,15 +1,21 @@
+import { ElementType } from '@/elements';
+import Board from '@/views/Room/class/Board';
+
 type User = {
   userId: string;
   userName: string;
   src: string;
 };
-import Board from '@/views/Room/class/Board';
 
 type State = {
+  isFounder: boolean;
   isEditingBoardName: boolean;
 };
+
 type DrawOptions = {
+  userId?: string;
   board: Board;
+  type: ElementType;
   mouseDownX: number;
   mouseDownY: number;
   width: number;

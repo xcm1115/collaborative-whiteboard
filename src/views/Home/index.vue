@@ -21,6 +21,7 @@ import {
   FormInst,
   NList,
   NListItem,
+  NScrollbar,
 } from 'naive-ui';
 import { List24Regular as List } from '@vicons/fluent';
 
@@ -359,14 +360,16 @@ const joinBoard = (id?: string) => {
       >
     </div>
 
-    <n-list bordered clickable>
-      <template #header>
-        <div class="cw-flex cw-justify-center">已创建的白板</div>
-      </template>
-      <n-list-item v-for="roomId in state.roomList" :key="roomId" @click="joinBoard(roomId)">{{
-        roomId
-      }}</n-list-item>
-    </n-list>
+    <n-scrollbar style="max-height: 350px" trigger="hover">
+      <n-list bordered clickable>
+        <template #header>
+          <div class="cw-flex cw-justify-center">已创建的白板</div>
+        </template>
+        <n-list-item v-for="roomId in state.roomList" :key="roomId" @click="joinBoard(roomId)">{{
+          roomId
+        }}</n-list-item>
+      </n-list>
+    </n-scrollbar>
   </n-modal>
 </template>
 

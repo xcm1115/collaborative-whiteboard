@@ -6,18 +6,11 @@ const mainStore = defineStore('main', {
     ({
       userId: null,
       userName: '',
-      userAvatar: 'https://xsgames.co/randomusers/avatar.php?g=pixel',
+      userAvatar: 'https://xsgames.co/randomusers/avatar.php?g=male',
       token: '',
       ws: null,
       roomId: '',
     } as State),
-  actions: {
-    setUserInfo(userId: string, userName: string) {
-      this.userId = userId;
-      this.userName = userName;
-      this.userAvatar = `https://r.hrc.woa.com/photo/500/${userName}.png`;
-    },
-  },
 });
 
 export { mainStore };

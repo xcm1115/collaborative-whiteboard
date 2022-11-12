@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { reactive, ref, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
+import { useClipboard } from '@vueuse/core';
 // import { DrawOptions } from './types';
 import WS from '@/websocket';
 
@@ -20,6 +21,7 @@ import {
   NAvatarGroup,
   NDropdown,
   useMessage,
+  NTooltip,
 } from 'naive-ui';
 import {
   ArrowLeft24Regular as ArrowLeft,
@@ -37,7 +39,7 @@ import { User, State } from './types';
 
 // Class
 import Board from './class/Board';
-import { drawRectangle } from './class/Draw';
+import { drawElement } from './class/Draw';
 import { importFromJson } from './class/import';
 import { exportJson } from './class/Export';
 
@@ -45,8 +47,27 @@ const store = mainStore();
 const { userId, userName, userAvatar, ws, roomId } = storeToRefs(store);
 
 const router = useRouter();
-
 const message = useMessage();
+const { copy, copied } = useClipboard();
+
+const userList = ref<User[]>([]);
+const container = ref<HTMLDivElement | null>(null);
+const roomName = ref<string>('新建白板');
+const roomMode = ref<string>('cooperation');
+const tabsRef = ref([
+  {
+    value: '白板 1',
+    label: '白板 1',
+  },
+]);
+const currentTab = ref(0);
+const boards = ref<Board[]>([]);
+const currentBoard = ref<Board | null>(null);
+
+const state: State = reactive({
+  isFounder: true,
+  isEditingBoardName: false,
+});
 
 const modeOptions = [
   {
@@ -68,25 +89,6 @@ const moreOptions = [
     key: 'json',
   },
 ];
-
-const userList = ref<User[]>([]);
-const container = ref<HTMLDivElement | null>(null);
-const roomName = ref<string>('新建白板');
-const roomMode = ref<string>('cooperation');
-const tabsRef = ref([
-  {
-    value: '白板 1',
-    label: '白板 1',
-  },
-]);
-const currentTab = ref(0);
-const boards = ref<Board[]>([]);
-const currentBoard = ref<Board | null>(null);
-
-const state: State = reactive({
-  isEditingBoardName: false,
-  userList: [],
-});
 
 const init = async () => {
   if (!ws.value && userId.value) {
@@ -127,14 +129,6 @@ const wsOnMessage = () => {
   if (ws.value) {
     ws.value!.instance?.addEventListener('message', async (event) => {
       const msg = await JSON.parse(event.data);
-      const options = {
-        board: currentBoard.value as Board,
-        mouseDownX: msg.data.mouseDownX,
-        mouseDownY: msg.data.mouseDownY,
-        width: msg.data.width,
-        height: msg.data.height,
-        isSync: false,
-      };
 
       if (msg.userId && msg.userId !== userId.value) {
         switch (msg.operation) {
@@ -145,8 +139,22 @@ const wsOnMessage = () => {
               src: msg.data.userAvatar,
             });
             break;
+          case 'leave':
+            userList.value = userList.value.filter((user) => user.userId !== msg.userId);
+            break;
+          case 'switch-mode':
+            roomMode.value = msg.data.mode;
+            break;
           case 'draw':
-            drawRectangle(options);
+            drawElement({
+              board: currentBoard.value as Board,
+              type: msg.data.type,
+              mouseDownX: msg.data.mouseDownX,
+              mouseDownY: msg.data.mouseDownY,
+              width: msg.data.width,
+              height: msg.data.height,
+              isSync: false,
+            });
             break;
           case 'mouseup':
             currentBoard.value!.isMouseDown = false;
@@ -154,7 +162,11 @@ const wsOnMessage = () => {
             currentBoard.value!.mouseDownY = 0;
             currentBoard.value!.elements.cancelActiveElement();
             break;
-          case 'leave':
+          case 'add-board':
+            addTab(msg.data.boardId, false);
+            break;
+          case 'switch-board':
+            switchTab(msg.data.boardId, false);
             break;
           default:
             break;
@@ -175,6 +187,7 @@ const handleModeSelect = (key: string) => {
 
   switch (key) {
     case 'cooperation':
+      currentBoard.value!.setDrawType('');
       break;
     case 'read':
       currentBoard.value!.elements.cancelActiveElement();
@@ -182,6 +195,20 @@ const handleModeSelect = (key: string) => {
       break;
     default:
       break;
+  }
+
+  const data = {
+    mode: key,
+  };
+
+  ws.value!.sendWsMsg(userId.value!, roomId.value!, 'switch-mode', data);
+};
+
+const share = () => {
+  copy(roomId.value!);
+
+  if (copied) {
+    message.success('白板 ID 已复制');
   }
 };
 
@@ -205,12 +232,14 @@ const curDrawTool = (drawTool: string) => {
     return;
   }
 
-  currentBoard.value!.setDrawType(drawTool);
+  if (currentBoard.value) {
+    currentBoard.value.setDrawType(drawTool);
+  }
 };
 
-const addTab = () => {
+const addTab = (boardId: number, isSync = false) => {
   container.value!.innerHTML = '';
-  const board = new Board({ boardId: boards.value.length + 1, container: container.value! });
+  const board = new Board({ boardId, container: container.value! });
 
   boards.value.push(board);
   tabsRef.value.push({
@@ -220,22 +249,29 @@ const addTab = () => {
   currentBoard.value = board;
   currentTab.value = tabsRef.value.length - 1;
 
-  const data = {
-    boardId: board.boardId,
-  };
-  ws.value?.sendWsMsg(userId.value!, roomId.value!, 'add-board', data);
+  if (isSync) {
+    const data = {
+      boardId,
+    };
+
+    ws.value!.sendWsMsg(userId.value!, roomId.value!, 'add-board', data);
+  }
 };
 
-const switchTab = (index: number) => {
+const switchTab = (index: number, isSync = false) => {
   currentBoard.value = boards.value[index];
   container.value!.innerHTML = '';
   currentBoard.value!.initBoard();
   currentBoard.value!.render.render();
+  currentTab.value = index;
 
-  const data = {
-    boardId: index,
-  };
-  ws.value!.sendWsMsg(userId.value!, roomId.value!, 'switch-board', data);
+  if (state.isFounder && roomMode.value === 'read' && isSync) {
+    const data = {
+      boardId: index,
+    };
+
+    ws.value?.sendWsMsg(userId.value!, roomId.value!, 'switch-board', data);
+  }
 };
 
 onMounted(async () => {
@@ -255,6 +291,7 @@ onUnmounted(() => {
   if (ws.value) {
     ws.value!.sendWsMsg(userId.value!, roomId.value!, 'leave', null);
     ws.value!.closeWebSocket();
+    ws.value = null;
   }
 });
 </script>
@@ -299,12 +336,26 @@ onUnmounted(() => {
 
     <span class="cw-flex cw-items-center">
       <span class="cw-mr-6">
-        <n-dropdown trigger="hover" :options="modeOptions" @select="handleModeSelect">
+        <n-dropdown
+          v-if="state.isFounder"
+          trigger="hover"
+          :options="modeOptions"
+          @select="handleModeSelect"
+        >
           <n-button>{{ roomMode === 'cooperation' ? '协作模式' : '阅读模式' }} </n-button>
         </n-dropdown>
+
+        <n-tooltip v-else trigger="hover">
+          <template #trigger>
+            <n-button disabled
+              >{{ roomMode === 'cooperation' ? '协作模式' : '阅读模式' }}
+            </n-button>
+          </template>
+          非创建者无法修改模式
+        </n-tooltip>
       </span>
 
-      <n-button type="primary" icon-placement="right">
+      <n-button type="primary" icon-placement="right" @click="share">
         <template #icon>
           <n-icon>
             <Share />
@@ -342,7 +393,7 @@ onUnmounted(() => {
       v-model:value="currentTab"
       class="cw-mr-2"
       size="large"
-      @update:value="switchTab"
+      @update:value="switchTab(currentTab, true)"
     >
       <n-radio-button v-for="(tab, index) in tabsRef" :key="tab.value" :value="index">
         <div class="cw-flex cw-items-center">
@@ -357,7 +408,7 @@ onUnmounted(() => {
       </n-radio-button>
     </n-radio-group>
 
-    <n-button class="cw-add-tab" size="large" @click="addTab">
+    <n-button class="cw-add-tab" size="large" @click="addTab(boards.length + 1, true)">
       <template #icon>
         <n-icon>
           <Add />

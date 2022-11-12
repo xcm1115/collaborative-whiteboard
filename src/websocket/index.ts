@@ -8,8 +8,8 @@ class WS {
   }
 
   createWebSocket(roomId: string, userId: string) {
-    // this.instance = new WebSocket(`${import.meta.env.VITE_WS_URL}/room/${roomId}/user/${userId}`);
-    this.instance = new WebSocket(`${import.meta.env.VITE_WS_URL}`);
+    this.instance = new WebSocket(`${import.meta.env.VITE_WS_URL}/room/${roomId}/user/${userId}`);
+    // this.instance = new WebSocket(`${import.meta.env.VITE_WS_URL}`);
   }
 
   closeWebSocket() {

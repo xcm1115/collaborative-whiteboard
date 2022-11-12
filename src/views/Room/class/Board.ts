@@ -15,7 +15,7 @@ import {
   drawDiamond,
   drawSmoothLine,
   drawStraightLine,
-  drawTextElement,
+  // drawTextElement,
   drawTriangle,
 } from './Draw';
 import TextEdit from '@/helper/TextEdit';
@@ -165,32 +165,25 @@ class Board {
     switch (this.drawType) {
       case ElementType.SmoothLine:
         drawSmoothLine(options, e);
-
         break;
       case ElementType.StraightLine:
         drawStraightLine(options, e);
-
         break;
       case ElementType.Rectangle:
         drawRectangle(options);
         break;
       case ElementType.Circle:
         drawCircle(options);
-
         break;
       case ElementType.Triangle:
         drawTriangle(options);
-
         break;
       case ElementType.Diamond:
         drawDiamond(options);
-
         break;
-      case ElementType.Text:
-        this.createTextElement(options);
-
-        break;
-
+      // case ElementType.Text:
+      //   this.createTextElement(options);
+      //   break;
       default:
         break;
     }
