@@ -24,11 +24,13 @@ class Elements {
   private board: Board;
   public elementList: BaseElement[];
   public activeElement: BaseElement | Text | null;
+  public selectElement: BaseElement | Text | null;
 
   constructor(board: Board) {
     this.board = board;
     this.elementList = [];
     this.activeElement = null;
+    this.selectElement = null;
   }
 
   // 序列化当前白板上的所有元素
@@ -49,11 +51,23 @@ class Elements {
     this.activeElement = null;
   }
 
-  setActiveElement(element: BaseElement) {
+  cancelSelectElement() {
+    this.activeElement = null;
+  }
+
+  setActiveElement(element: BaseElement | null) {
     this.cancelActiveElement();
 
     if (element) {
       this.activeElement = element;
+    }
+  }
+
+  setSelectElement(element: BaseElement | null) {
+    this.cancelSelectElement();
+
+    if (element) {
+      this.selectElement = element;
     }
   }
 
@@ -130,6 +144,34 @@ class Elements {
         this.addElement(element);
       }
     });
+  }
+
+  // 检测是否点击选中元素
+  isCheckAtElement(e: MouseEvent) {
+    // 判断是否选中元素
+    const x = e.clientX;
+    const y = e.clientY;
+    // 从后往前遍历元素，默认认为新创建的元素在上一层
+    for (let i = this.elementList.length - 1; i >= 0; i--) {
+      const element = this.elementList[i];
+      if (element.isHit(x, y)) {
+        console.log(element);
+        return element;
+      }
+    }
+    return null;
+  }
+
+  // 为选中元素设置样式
+  setActiveElementStyle(style = {}) {
+    if (!this.activeElement) {
+      return this;
+    }
+    this.activeElement.style['strokeStyle'] = 'blue';
+    // Object.keys(style).forEach((key) => {
+    //   this.activeElement.style[key] = style[key];
+    // });
+    return this;
   }
 
   // 曲线

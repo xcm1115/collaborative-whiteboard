@@ -2,14 +2,6 @@ import Board from '@/views/Room/class/Board';
 import BaseElement from './BaseElement';
 import { GraphOptions } from './index';
 
-// type Options = {
-//   type: ElementType;
-//   x: number;
-//   y: number;
-//   width: number;
-//   height: number;
-// };
-
 // 三角形元素类
 class Triangle extends BaseElement {
   private startX = 0;

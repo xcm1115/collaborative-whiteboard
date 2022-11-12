@@ -8,7 +8,7 @@ import { mainStore } from '@/store';
 const store = mainStore();
 const { userId, ws, roomId } = storeToRefs(store);
 
-const drawElement = (options: DrawOptions) => {
+const drawElement = (options: DrawOptions, e: MouseEvent) => {
   switch (options.type) {
     case ElementType.Rectangle:
       drawRectangle(options);
@@ -23,10 +23,10 @@ const drawElement = (options: DrawOptions) => {
       drawDiamond(options);
       break;
     case ElementType.SmoothLine:
-      drawSmoothLine(options, options.e);
+      drawSmoothLine(options, e);
       break;
     case ElementType.StraightLine:
-      drawStraightLine(options, options.e);
+      drawStraightLine(options, e);
       break;
     // case ElementType.Text:
     //   drawTextElement(options);
@@ -177,12 +177,4 @@ const drawDiamond = (options: DrawOptions) => {
 //   }
 // };
 
-export {
-  drawElement,
-  drawSmoothLine,
-  drawStraightLine,
-  drawRectangle,
-  drawCircle,
-  drawTriangle,
-  drawDiamond,
-};
+export { drawElement };

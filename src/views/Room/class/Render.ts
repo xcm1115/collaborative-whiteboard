@@ -1,4 +1,5 @@
 import Board from './Board';
+import { drawElement } from '@/views/Room/class/Draw';
 
 class Render {
   private board: Board;
@@ -20,6 +21,13 @@ class Render {
     // 渲染所有元素
     this.board.elements.elementList.forEach((element) => {
       element.render();
+      // if (this.board.elements.activeElement === element) {
+      //   this.board.ctx.strokeStyle = 'blue';
+      //   element.render();
+      // } else {
+      //   this.board.ctx.strokeStyle = 'black';
+      //   element.render();
+      // }
     });
   }
 }

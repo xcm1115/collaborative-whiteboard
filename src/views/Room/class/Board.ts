@@ -1,4 +1,3 @@
-import BaseElement from '@/elements/BaseElement';
 import Elements from './Elements';
 import { ElementType } from '@/elements';
 import Render from './Render';
@@ -9,15 +8,7 @@ import { DrawOptions } from '../types';
 import { mainStore } from '@/store';
 
 // Draw
-import {
-  drawRectangle,
-  drawCircle,
-  drawDiamond,
-  drawSmoothLine,
-  drawStraightLine,
-  // drawTextElement,
-  drawTriangle,
-} from './Draw';
+import { drawElement } from './Draw';
 import TextEdit from '@/helper/TextEdit';
 
 type Option = {
@@ -106,13 +97,14 @@ class Board {
     if (this.drawType === ElementType.Text) {
       const options = {
         board: this,
+        type: this.drawType,
         mouseDownX: this.mouseDownX,
         mouseDownY: this.mouseDownY,
         width: e.clientX - this.mouseDownX,
         height: e.clientY - this.mouseDownY,
         isSync: true,
       };
-      this.createTextElement(options);
+      this.createTextElement(options, e);
     }
   }
 
@@ -120,6 +112,19 @@ class Board {
     this.isMouseDown = true;
     this.mouseDownX = e.clientX;
     this.mouseDownY = e.clientY;
+    if (this.drawType === ElementType.Arrow) {
+      // 是否击中了某个元素
+      const hitElement = this.elements.isCheckAtElement(e);
+      this.elements.setActiveElement(hitElement);
+      //增加击中样式
+      // this.elements.setActiveElementStyle();
+      this.ctx.strokeStyle = 'blue';
+      this.elements.activeElement?.render();
+      this.ctx.strokeStyle = 'black';
+      // this.render.render();
+    } else {
+      this.render.render();
+    }
   }
 
   onMousemove(e: MouseEvent) {
@@ -128,6 +133,7 @@ class Board {
     }
     const options = {
       board: this,
+      type: this.drawType,
       mouseDownX: this.mouseDownX,
       mouseDownY: this.mouseDownY,
       width: e.clientX - this.mouseDownX,
@@ -139,31 +145,7 @@ class Board {
       return;
     }
 
-    switch (this.drawType) {
-      case ElementType.SmoothLine:
-        drawSmoothLine(options, e);
-        break;
-      case ElementType.StraightLine:
-        drawStraightLine(options, e);
-        break;
-      case ElementType.Rectangle:
-        drawRectangle(options);
-        break;
-      case ElementType.Circle:
-        drawCircle(options);
-        break;
-      case ElementType.Triangle:
-        drawTriangle(options);
-        break;
-      case ElementType.Diamond:
-        drawDiamond(options);
-        break;
-      // case ElementType.Text:
-      //   this.createTextElement(options);
-      //   break;
-      default:
-        break;
-    }
+    drawElement(options, e);
   }
 
   onMouseup(e?: MouseEvent) {
@@ -185,8 +167,8 @@ class Board {
   }
 
   // 创建文本元素
-  createTextElement(options: DrawOptions) {
-    drawTextElement(options);
+  createTextElement(options: DrawOptions, e: MouseEvent) {
+    drawElement(options, e);
     // this.keyCommand.unBindEvent();
     this.textEdit.showTextEdit();
   }
