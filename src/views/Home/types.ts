@@ -4,6 +4,7 @@ type State = {
   inputValue: string;
   loading: boolean;
   roomList: string[];
+  currentHoverRoom: string;
 };
 
 type LoginData = {

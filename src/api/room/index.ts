@@ -2,6 +2,7 @@ import CreateRoomApi from './create-room';
 import RoomListApi from './room-list';
 import RoomExistApi from './room-exist';
 import IsOwnerApi from './is-owner';
+import DeleteRoomApi from './delete-room';
 
 // [GET]
 const getRoomList = (postData: Record<string, unknown>) => {
@@ -33,4 +34,12 @@ const createRoom = (postData: Record<string, unknown>) => {
   return api.verifyJson(res);
 };
 
-export { getRoomList, checkRoomExist, checkIsOwner, createRoom };
+// [DELETE]
+const deleteRoom = (postData: Record<string, unknown>) => {
+  const api = new DeleteRoomApi(postData.token as string, postData.roomId as string);
+  const res = api.destroy();
+
+  return api.verifyJson(res);
+};
+
+export { getRoomList, checkRoomExist, checkIsOwner, createRoom, deleteRoom };

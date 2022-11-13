@@ -214,7 +214,7 @@ const wsOnMessage = () => {
             break;
           case 'draw':
             drawElement({
-              board: currentBoard.value as Board,
+              board: boards.value[msg.data.boardId] as Board,
               type: msg.data.type,
               mouseDownX: msg.data.mouseDownX,
               mouseDownY: msg.data.mouseDownY,
@@ -474,6 +474,7 @@ onUnmounted(() => {
       v-model:value="currentTab"
       class="cw-mr-2"
       size="large"
+      :disabled="roomMode === 'read' && !state.isFounder"
       @update:value="switchTab(currentTab, true)"
     >
       <n-radio-button v-for="(tab, index) in tabsRef" :key="tab.value" :value="index">
@@ -489,7 +490,12 @@ onUnmounted(() => {
       </n-radio-button>
     </n-radio-group>
 
-    <n-button class="cw-add-tab" size="large" @click="addTab(boards.length, true)">
+    <n-button
+      :disabled="roomMode === 'read' && !state.isFounder"
+      class="cw-add-tab"
+      size="large"
+      @click="addTab(boards.length, true)"
+    >
       <template #icon>
         <n-icon>
           <Add />

@@ -5,6 +5,9 @@ import { exportJson } from './Export';
 // Store
 import { mainStore } from '@/store';
 
+// Util
+import { byteArrToString } from './byteArrToString';
+
 const store = mainStore();
 const { userId, ws, roomId } = storeToRefs(store);
 
@@ -14,4 +17,8 @@ const exportSync = (boards: Board[]) => {
   ws.value?.sendWsMsg(userId.value!, roomId.value, 'export', { boards: data });
 };
 
-export { exportSync };
+const importSync = (byteArr: any) => {
+  const data = byteArrToString(byteArr);
+};
+
+export { exportSync, importSync };

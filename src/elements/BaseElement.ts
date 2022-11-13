@@ -59,7 +59,7 @@ class BaseElement {
   }
 
   // 检测某元素是否被击中
-  isHit(x: number, y: number) {
+  isHit(x: number, y: number): any {
     return isCheckAtElementEdge(this, [x, y]);
   }
 }

@@ -22,12 +22,13 @@ import {
   NList,
   NListItem,
   NScrollbar,
+  NEmpty,
 } from 'naive-ui';
 import { List24Regular as List } from '@vicons/fluent';
 
 // API
 import { login, register } from '@/api/auth';
-import { getRoomList, checkRoomExist, createRoom } from '@/api/room';
+import { getRoomList, checkRoomExist, createRoom, deleteRoom } from '@/api/room';
 
 // Type
 import { State, LoginData, CreateRoomData, RoomListData, RoomExistData } from './types';
@@ -85,6 +86,7 @@ const state: State = reactive({
   inputValue: '',
   loading: false,
   roomList: [],
+  currentHoverRoom: '',
 });
 
 const handleGetRoomList = async () => {
@@ -265,6 +267,26 @@ const joinBoard = async (id?: string) => {
 
   message.success('加入白板成功');
 };
+
+const handleDeleteRoom = async (id: string) => {
+  const postData = {
+    token: token.value,
+    roomId: id,
+  };
+
+  try {
+    const res = await deleteRoom(postData);
+
+    if (Number(res.code) === 0) {
+      message.success('删除白板成功');
+      handleGetRoomList();
+    } else {
+      throw new Error(res.message);
+    }
+  } catch (error) {
+    message.warning(`删除白板失败: ${error}`);
+  }
+};
 </script>
 
 <template>
@@ -396,13 +418,38 @@ const joinBoard = async (id?: string) => {
     </div>
 
     <n-scrollbar style="max-height: 350px" trigger="hover">
-      <n-list bordered clickable>
+      <n-list bordered clickable hoverable>
         <template #header>
           <div class="cw-flex cw-justify-center">已创建的白板</div>
         </template>
-        <n-list-item v-for="roomId in state.roomList" :key="roomId" @click="joinBoard(roomId)">{{
-          roomId
-        }}</n-list-item>
+
+        <div v-if="state.roomList.length === 0" class="cw-py-4">
+          <n-empty description="暂无白板" />
+        </div>
+
+        <template v-else>
+          <n-list-item
+            v-for="roomId in state.roomList"
+            :key="roomId"
+            @click="joinBoard(roomId)"
+            @mouseenter="() => (state.currentHoverRoom = roomId)"
+            @mouseleave="() => (state.currentHoverRoom = '')"
+          >
+            <div class="cw-py-2">
+              {{ roomId }}
+            </div>
+            <template #suffix>
+              <n-button
+                v-show="state.currentHoverRoom === roomId"
+                type="error"
+                secondary
+                @click.stop="handleDeleteRoom(roomId)"
+              >
+                删除
+              </n-button>
+            </template>
+          </n-list-item>
+        </template>
       </n-list>
     </n-scrollbar>
   </n-modal>
