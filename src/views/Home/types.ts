@@ -20,4 +20,8 @@ type RoomListData = {
   rooms: string[];
 };
 
-export type { State, LoginData, CreateRoomData, RoomListData };
+type RoomExistData = {
+  exist: number;
+};
+
+export type { State, LoginData, CreateRoomData, RoomListData, RoomExistData };

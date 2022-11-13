@@ -23,10 +23,10 @@ const drawElement = (options: DrawOptions) => {
       drawDiamond(options);
       break;
     case ElementType.SmoothLine:
-      drawSmoothLine(options, options.e);
+      drawSmoothLine(options);
       break;
     case ElementType.StraightLine:
-      drawStraightLine(options, options.e);
+      drawStraightLine(options);
       break;
     // case ElementType.Text:
     //   drawTextElement(options);
@@ -34,120 +34,73 @@ const drawElement = (options: DrawOptions) => {
     default:
       break;
   }
-};
 
-const drawSmoothLine = (options: DrawOptions, e: MouseEvent) => {
-  const { board, mouseDownX, mouseDownY, width, height, isSync } = options;
-  board.elements.createSmoothLine(userId.value!, mouseDownX, mouseDownY, width, height, e);
-  board.render.render();
-
-  if (isSync) {
+  if (options.isSync) {
     const data = {
-      boardId: board.boardId,
-      type: ElementType.SmoothLine,
-      mouseDownX,
-      mouseDownY,
-      width,
-      height,
+      boardId: options.board.boardId,
+      type: options.type,
+      width: options.width,
+      height: options.height,
+      mouseDownX: options.mouseDownX,
+      mouseDownY: options.mouseDownY,
+      clientX: options.clientX,
+      clientY: options.clientY,
     };
 
     ws.value!.sendWsMsg(userId.value!, roomId.value, 'draw', data);
   }
 };
 
-const drawStraightLine = (options: DrawOptions, e: MouseEvent) => {
-  const { board, mouseDownX, mouseDownY, width, height, isSync } = options;
-  board.elements.createStraightLine(userId.value!, mouseDownX, mouseDownY, width, height, e);
+const drawSmoothLine = (options: DrawOptions) => {
+  const { board, mouseDownX, mouseDownY, width, height, clientX, clientY, isSync } = options;
+  board.elements.createSmoothLine(
+    userId.value!,
+    mouseDownX,
+    mouseDownY,
+    width,
+    height,
+    clientX,
+    clientY
+  );
   board.render.render();
+};
 
-  if (isSync) {
-    const data = {
-      boardId: board.boardId,
-      type: ElementType.StraightLine,
-      mouseDownX,
-      mouseDownY,
-      width,
-      height,
-    };
-
-    ws.value!.sendWsMsg(userId.value!, roomId.value, 'draw', data);
-  }
+const drawStraightLine = (options: DrawOptions) => {
+  const { board, mouseDownX, mouseDownY, width, height, clientX, clientY, isSync } = options;
+  board.elements.createStraightLine(
+    userId.value!,
+    mouseDownX,
+    mouseDownY,
+    width,
+    height,
+    clientX,
+    clientY
+  );
+  board.render.render();
 };
 
 const drawRectangle = (options: DrawOptions) => {
   const { board, mouseDownX, mouseDownY, width, height, isSync } = options;
   board.elements.createRectangle(userId.value!, mouseDownX, mouseDownY, width, height);
   board.render.render();
-
-  if (isSync) {
-    const data = {
-      boardId: board.boardId,
-      type: ElementType.Rectangle,
-      mouseDownX,
-      mouseDownY,
-      width,
-      height,
-    };
-
-    ws.value!.sendWsMsg(userId.value!, roomId.value, 'draw', data);
-  }
 };
 
 const drawCircle = (options: DrawOptions) => {
   const { board, mouseDownX, mouseDownY, width, height, isSync } = options;
   board.elements.createCircle(userId.value!, mouseDownX, mouseDownY, width, height);
   board.render.render();
-
-  if (isSync) {
-    const data = {
-      boardId: board.boardId,
-      type: ElementType.Circle,
-      mouseDownX,
-      mouseDownY,
-      width,
-      height,
-    };
-
-    ws.value!.sendWsMsg(userId.value!, roomId.value, 'draw', data);
-  }
 };
 
 const drawTriangle = (options: DrawOptions) => {
   const { board, mouseDownX, mouseDownY, width, height, isSync } = options;
   board.elements.createTriangle(userId.value!, mouseDownX, mouseDownY, width, height);
   board.render.render();
-
-  if (isSync) {
-    const data = {
-      boardId: board.boardId,
-      type: ElementType.Triangle,
-      mouseDownX,
-      mouseDownY,
-      width,
-      height,
-    };
-
-    ws.value!.sendWsMsg(userId.value!, roomId.value, 'draw', data);
-  }
 };
 
 const drawDiamond = (options: DrawOptions) => {
   const { board, mouseDownX, mouseDownY, width, height, isSync } = options;
   board.elements.createDiamond(userId.value!, mouseDownX, mouseDownY, width, height);
   board.render.render();
-
-  if (isSync) {
-    const data = {
-      boardId: board.boardId,
-      type: ElementType.Diamond,
-      mouseDownX,
-      mouseDownY,
-      width,
-      height,
-    };
-
-    ws.value!.sendWsMsg(userId.value!, roomId.value, 'draw', data);
-  }
 };
 
 // const drawTextElement = (options: DrawOptions) => {

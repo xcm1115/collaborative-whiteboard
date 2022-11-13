@@ -1,10 +1,8 @@
 <script setup lang="ts">
-import { reactive, ref, onMounted, onUnmounted } from 'vue';
+import { reactive, ref, Ref, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useClipboard } from '@vueuse/core';
-// import { DrawOptions } from './types';
 import WS from '@/websocket';
-
 import { storeToRefs } from 'pinia';
 
 // Store
@@ -34,18 +32,24 @@ import {
 import DrawTools from '@/components/DrawTools/index.vue';
 import { ElementType } from '@/elements';
 
+// API
+import { checkRoomExist, checkIsOwner } from '@/api/room';
+
 // Type
 import { Message } from '@/websocket/types';
-import { User, State } from './types';
+import { RoomExistData, User, State, CheckIsOwnerData } from './types';
 
 // Class
 import Board from './class/Board';
 import { drawElement } from './class/Draw';
-import { importFromJson } from './class/import';
-import { exportJson } from './class/Export';
+
+// Util
+import { importFromJson } from './utils/import';
+import { exportJson, downloadJson } from './utils/Export';
+import { exportSync } from './utils/sync';
 
 const store = mainStore();
-const { userId, userName, userAvatar, ws, roomId } = storeToRefs(store);
+const { userId, token, userName, userAvatar, ws, roomId } = storeToRefs(store);
 
 const router = useRouter();
 const message = useMessage();
@@ -91,6 +95,34 @@ const moreOptions = [
   },
 ];
 
+const handleCheckRoomExist = async () => {
+  let isExist = false;
+  const postData = {
+    token: token.value,
+    roomId: roomId.value,
+  };
+
+  try {
+    const res = await checkRoomExist(postData);
+    const data: RoomExistData = res.data as RoomExistData;
+
+    if (Number(res.code) === 0) {
+      if (data.exist === 1) {
+        isExist = true;
+        return isExist;
+      } else {
+        message.warning('房间不存在');
+      }
+    } else {
+      throw new Error(res.message);
+    }
+  } catch (error) {
+    message.warning(`请求错误: ${error}`);
+  }
+
+  return isExist;
+};
+
 const init = async () => {
   if (!ws.value && userId.value) {
     userList.value.push({
@@ -106,6 +138,30 @@ const init = async () => {
 
     boards.value.push(board);
     currentBoard.value = board;
+  }
+};
+
+const handleCheckIsOwner = async () => {
+  const postData = {
+    token: token.value,
+    roomId: roomId.value,
+  };
+
+  try {
+    const res = await checkIsOwner(postData);
+    const data = res.data as CheckIsOwnerData;
+
+    if (Number(res.code) === 0) {
+      if (data.isOwner) {
+        state.isFounder = true;
+      } else {
+        state.isFounder = false;
+      }
+    } else {
+      throw new Error(res.message);
+    }
+  } catch (error) {
+    message.warning('获取房间信息失败');
   }
 };
 
@@ -131,6 +187,16 @@ const wsOnMessage = () => {
     ws.value!.instance?.addEventListener('message', async (event) => {
       const msg = await JSON.parse(event.data);
 
+      if (msg.userId && msg.userId === userId.value) {
+        switch (msg.operation) {
+          case 'export':
+            exportSync(boards.value as Board[]);
+            break;
+          case 'full-frame':
+            break;
+        }
+      }
+
       if (msg.userId && msg.userId !== userId.value) {
         switch (msg.operation) {
           case 'join':
@@ -154,6 +220,8 @@ const wsOnMessage = () => {
               mouseDownY: msg.data.mouseDownY,
               width: msg.data.width,
               height: msg.data.height,
+              clientX: msg.data.clientX,
+              clientY: msg.data.clientY,
               isSync: false,
             });
             break;
@@ -217,10 +285,16 @@ const handleMoreSelect = (key: string) => {
   if (currentBoard.value) {
     switch (key) {
       case 'import':
-        importFromJson(currentBoard.value as Board);
+        importFromJson(
+          container,
+          boards as Ref<Board[]>,
+          currentBoard as Ref<Board | null>,
+          tabsRef,
+          currentTab
+        );
         break;
       case 'json':
-        exportJson(currentBoard.value as Board);
+        downloadJson(exportJson(boards.value as Board[]));
         break;
       default:
         break;
@@ -244,11 +318,11 @@ const addTab = (boardId: number, isSync = false) => {
 
   boards.value.push(board);
   tabsRef.value.push({
-    value: `白板 ${tabsRef.value.length + 1}`,
-    label: `白板 ${tabsRef.value.length + 1}`,
+    value: `白板 ${boardId + 1}`,
+    label: `白板 ${boardId + 1}`,
   });
   currentBoard.value = board;
-  currentTab.value = tabsRef.value.length - 1;
+  currentTab.value = boardId;
 
   if (isSync) {
     const data = {
@@ -277,12 +351,18 @@ const switchTab = (index: number, isSync = false) => {
 
 onMounted(async () => {
   if (!userId.value) {
-    router.push({
-      name: 'home',
-    });
+    backToHome();
+    return;
+  }
+
+  const isExist = await handleCheckRoomExist();
+  if (!isExist) {
+    backToHome();
+    return;
   }
 
   await init();
+  await handleCheckIsOwner();
 
   wsOnOpen();
   wsOnMessage();
@@ -409,7 +489,7 @@ onUnmounted(() => {
       </n-radio-button>
     </n-radio-group>
 
-    <n-button class="cw-add-tab" size="large" @click="addTab(boards.length + 1, true)">
+    <n-button class="cw-add-tab" size="large" @click="addTab(boards.length, true)">
       <template #icon>
         <n-icon>
           <Add />

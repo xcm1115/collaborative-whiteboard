@@ -1,6 +1,10 @@
 import { ElementType } from '@/elements';
 import Board from '@/views/Room/class/Board';
 
+type RoomExistData = {
+  exist: number;
+};
+
 type User = {
   userId: string;
   userName: string;
@@ -20,7 +24,13 @@ type DrawOptions = {
   mouseDownY: number;
   width: number;
   height: number;
+  clientX: number;
+  clientY: number;
   isSync: boolean;
 };
 
-export type { User, State, DrawOptions };
+type CheckIsOwnerData = {
+  isOwner: boolean;
+};
+
+export type { RoomExistData, User, State, DrawOptions, CheckIsOwnerData };

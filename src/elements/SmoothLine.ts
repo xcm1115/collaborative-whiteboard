@@ -13,7 +13,12 @@ class SmoothLine extends BaseLineElement {
 
     this.startX = this.mouseDownX - this.board.width / 2;
     this.startY = this.mouseDownY - this.board.height / 2;
-    this.points = this.pointArr;
+
+    if (options.pointArr) {
+      this.points = options.pointArr;
+    } else {
+      this.points = this.pointArr;
+    }
   }
 
   render() {

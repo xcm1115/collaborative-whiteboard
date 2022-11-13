@@ -116,6 +116,16 @@ class Elements {
     switch (opts.type) {
       case ElementType.Rectangle:
         return new Rectangle(userId.value!, this.board, opts);
+      case ElementType.Circle:
+        return new Circle(userId.value!, this.board, opts);
+      case ElementType.Triangle:
+        return new Triangle(userId.value!, this.board, opts);
+      case ElementType.Diamond:
+        return new Diamond(userId.value!, this.board, opts);
+      case ElementType.SmoothLine:
+        return new SmoothLine(userId.value!, this.board, opts);
+      case ElementType.StraightLine:
+        return new StraightLine(userId.value!, this.board, opts);
       default:
         return null;
     }
@@ -139,7 +149,8 @@ class Elements {
     mouseDownY: number,
     width: number,
     height: number,
-    e: MouseEvent
+    clientX: number,
+    clientY: number
   ) {
     const data = {
       type: ElementType.SmoothLine,
@@ -151,7 +162,7 @@ class Elements {
 
     this.createElement(userId, data);
     const element = this.activeElement as BaseLineElement;
-    element?.addPoint(e.clientX, e.clientY);
+    element?.addPoint(clientX, clientY);
   }
 
   // 直线
@@ -161,7 +172,8 @@ class Elements {
     mouseDownY: number,
     width: number,
     height: number,
-    e: MouseEvent
+    clientX: number,
+    clientY: number
   ) {
     const data = {
       type: ElementType.StraightLine,
@@ -173,7 +185,7 @@ class Elements {
 
     this.createElement(userId, data);
     const element = this.activeElement as BaseLineElement;
-    element.updateFictitiousPoint(e.clientX, e.clientY);
+    element.updateFictitiousPoint(clientX, clientY);
     element?.addPoint(mouseDownX, mouseDownY);
   }
 

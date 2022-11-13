@@ -3,22 +3,16 @@ import Elements from './Elements';
 import { ElementType } from '@/elements';
 import Render from './Render';
 import { storeToRefs } from 'pinia';
-import { DrawOptions } from '../types';
 
 // Store
 import { mainStore } from '@/store';
 
 // Draw
-import {
-  drawRectangle,
-  drawCircle,
-  drawDiamond,
-  drawSmoothLine,
-  drawStraightLine,
-  // drawTextElement,
-  drawTriangle,
-} from './Draw';
+import { drawElement } from './Draw';
 import TextEdit from '@/helper/TextEdit';
+
+// Type
+import { DrawOptions } from '../types';
 
 type Option = {
   boardId: number;
@@ -94,27 +88,28 @@ class Board {
   // 获取数据，包括状态数据及元素数据
   getData() {
     return {
+      boardId: this.boardId,
       elements: this.elements.serialize(),
     };
   }
 
-  onMouseDbclick(e: MouseEvent) {
-    this.isMouseDown = true;
-    this.mouseDownX = e.clientX;
-    this.mouseDownY = e.clientY;
-    //绘制文字时，显示编辑框
-    if (this.drawType === ElementType.Text) {
-      const options = {
-        board: this,
-        mouseDownX: this.mouseDownX,
-        mouseDownY: this.mouseDownY,
-        width: e.clientX - this.mouseDownX,
-        height: e.clientY - this.mouseDownY,
-        isSync: true,
-      };
-      this.createTextElement(options);
-    }
-  }
+  // onMouseDbclick(e: MouseEvent) {
+  //   this.isMouseDown = true;
+  //   this.mouseDownX = e.clientX;
+  //   this.mouseDownY = e.clientY;
+  //   //绘制文字时，显示编辑框
+  //   if (this.drawType === ElementType.Text) {
+  //     const options = {
+  //       board: this,
+  //       mouseDownX: this.mouseDownX,
+  //       mouseDownY: this.mouseDownY,
+  //       width: e.clientX - this.mouseDownX,
+  //       height: e.clientY - this.mouseDownY,
+  //       isSync: true,
+  //     };
+  //     this.createTextElement(options);
+  //   }
+  // }
 
   onMousedown(e: MouseEvent) {
     this.isMouseDown = true;
@@ -126,44 +121,24 @@ class Board {
     if (!this.isMouseDown) {
       return;
     }
-    const options = {
-      board: this,
-      mouseDownX: this.mouseDownX,
-      mouseDownY: this.mouseDownY,
-      width: e.clientX - this.mouseDownX,
-      height: e.clientY - this.mouseDownY,
-      isSync: true,
-    };
-
     if (this.drawType === ElementType.Arrow) {
       return;
     }
 
-    switch (this.drawType) {
-      case ElementType.SmoothLine:
-        drawSmoothLine(options, e);
-        break;
-      case ElementType.StraightLine:
-        drawStraightLine(options, e);
-        break;
-      case ElementType.Rectangle:
-        drawRectangle(options);
-        break;
-      case ElementType.Circle:
-        drawCircle(options);
-        break;
-      case ElementType.Triangle:
-        drawTriangle(options);
-        break;
-      case ElementType.Diamond:
-        drawDiamond(options);
-        break;
-      // case ElementType.Text:
-      //   this.createTextElement(options);
-      //   break;
-      default:
-        break;
-    }
+    const options: DrawOptions = {
+      userId: userId.value!,
+      board: this,
+      type: this.drawType,
+      mouseDownX: this.mouseDownX,
+      mouseDownY: this.mouseDownY,
+      width: e.clientX - this.mouseDownX,
+      height: e.clientY - this.mouseDownY,
+      clientX: e.clientX,
+      clientY: e.clientY,
+      isSync: true,
+    };
+
+    drawElement(options);
   }
 
   onMouseup(e?: MouseEvent) {
@@ -181,15 +156,15 @@ class Board {
     this.board.addEventListener('mousedown', this.onMousedown.bind(this));
     this.board.addEventListener('mousemove', this.onMousemove.bind(this));
     this.board.addEventListener('mouseup', this.onMouseup.bind(this));
-    this.board.addEventListener('dblclick', this.onMouseDbclick.bind(this));
+    // this.board.addEventListener('dblclick', this.onMouseDbclick.bind(this));
   }
 
-  // 创建文本元素
-  createTextElement(options: DrawOptions) {
-    drawTextElement(options);
-    // this.keyCommand.unBindEvent();
-    this.textEdit.showTextEdit();
-  }
+  // // 创建文本元素
+  // createTextElement(options: DrawOptions) {
+  //   drawTextElement(options);
+  //   // this.keyCommand.unBindEvent();
+  //   this.textEdit.showTextEdit();
+  // }
 }
 
 export default Board;

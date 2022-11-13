@@ -27,10 +27,10 @@ import { List24Regular as List } from '@vicons/fluent';
 
 // API
 import { login, register } from '@/api/auth';
-import { getRoomList, createRoom } from '@/api/room';
+import { getRoomList, checkRoomExist, createRoom } from '@/api/room';
 
 // Type
-import { State, LoginData, CreateRoomData, RoomListData } from './types';
+import { State, LoginData, CreateRoomData, RoomListData, RoomExistData } from './types';
 
 const router = useRouter();
 
@@ -220,11 +220,46 @@ const handleCreateRoom = async () => {
   }
 };
 
-const joinBoard = (id?: string) => {
+const handleCheckRoomExist = async (roomId: string) => {
+  const postData = {
+    token: token.value,
+    roomId,
+  };
+
+  try {
+    const res = await checkRoomExist(postData);
+    const data: RoomExistData = res.data as RoomExistData;
+
+    if (Number(res.code) === 0) {
+      return Boolean(data.exist);
+    } else {
+      throw new Error(res.message);
+    }
+  } catch (error) {
+    message.warning(`请求错误: ${error}`);
+  }
+};
+
+const joinBoard = async (id?: string) => {
   if (id) {
+    const isExist = await handleCheckRoomExist(id);
+
+    if (!isExist) {
+      message.warning(`该白板不存在`);
+      return;
+    }
+
     roomId.value = id;
     router.push(`/room/${id}`);
   } else {
+    const isExist = await handleCheckRoomExist(inputValue.value);
+
+    if (!isExist) {
+      message.warning(`该白板不存在`);
+      return;
+    }
+
+    roomId.value = inputValue.value;
     router.push(`/room/${inputValue.value}`);
   }
 
