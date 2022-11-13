@@ -44,12 +44,14 @@ export const getPointToLineDistance = (
 // 检测是否点击到折线上
 export const isCheckAtMultiSegment = (segments: number[][], hitPoint = [0, 0]) => {
   let res = false;
+
   segments.forEach((seg) => {
     if (res) return;
-    if (isCheckAtSegment(hitPoint[0], hitPoint[1], ...seg, HIT_DISTANCE)) {
+    if (isCheckAtSegment(hitPoint[0], hitPoint[1], seg[0], seg[1], seg[2], seg[3], HIT_DISTANCE)) {
       res = true;
     }
   });
+
   return res;
 };
 

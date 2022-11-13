@@ -86,7 +86,7 @@ export const isCheckAtStraightLineEdge = (element: BaseLineElement, hitPoint: nu
 
 // 检测是否点击到自由曲线边缘
 export const isCheckAtSmoothLineEdge = (element: BaseLineElement, hitPoint: number[]) => {
-  let res = null;
+  let res: any = null;
   element.pointArr.forEach((point) => {
     if (res) return;
     const dis = getTowPointDistance(hitPoint[0], hitPoint[1], point[0], point[1]);
