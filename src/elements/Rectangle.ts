@@ -19,6 +19,12 @@ class Rectangle extends BaseElement {
     this.board.ctx.rect(this.startX, this.startY, this.width, this.height);
     this.board.ctx.stroke();
   }
+
+  renderHit() {
+    this.board.ctx.beginPath();
+    this.board.ctx.rect(this.startX, this.startY, this.width, this.height);
+    this.board.ctx.stroke();
+  }
 }
 
 export default Rectangle;

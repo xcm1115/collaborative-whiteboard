@@ -1,4 +1,3 @@
-import BaseElement from '@/elements/BaseElement';
 import Elements from './Elements';
 import { ElementType } from '@/elements';
 import Render from './Render';
@@ -115,6 +114,18 @@ class Board {
     this.isMouseDown = true;
     this.mouseDownX = e.clientX;
     this.mouseDownY = e.clientY;
+    if (this.drawType === ElementType.Arrow) {
+      // 是否击中了某个元素
+      const hitElement = this.elements.isCheckAtElement(e);
+      if (hitElement) {
+        this.elements.setActiveElement(hitElement);
+        this.render.renderHitElement(hitElement);
+      } else {
+        this.render.render();
+      }
+      //增加击中样式
+      // this.elements.setActiveElementStyle();
+    }
   }
 
   onMousemove(e: MouseEvent) {
