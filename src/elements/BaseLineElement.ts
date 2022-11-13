@@ -4,7 +4,7 @@ import { GraphOptions } from './index';
 
 class BaseLineElement extends BaseElement {
   protected startPointArr: [];
-  protected pointArr: number[][];
+  public pointArr: number[][];
   protected fictitiousPoint: Record<string, number>;
 
   constructor(userId: string, board: Board, options: GraphOptions) {

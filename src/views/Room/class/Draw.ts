@@ -28,9 +28,9 @@ const drawElement = (options: DrawOptions, e: MouseEvent) => {
     case ElementType.StraightLine:
       drawStraightLine(options, e);
       break;
-    // case ElementType.Text:
-    //   drawTextElement(options);
-    //   break;
+    case ElementType.Text:
+      drawTextElement(options);
+      break;
     default:
       break;
   }
@@ -150,31 +150,31 @@ const drawDiamond = (options: DrawOptions) => {
   }
 };
 
-// const drawTextElement = (options: DrawOptions) => {
-//   const { board, mouseDownX, mouseDownY, width, height, isSync } = options;
-//   const data = {
-//     type: ElementType.Text,
-//     mouseDownX,
-//     mouseDownY,
-//     width,
-//     height,
-//   };
-//   board.elements.createElement(userId.value!, data);
-//   board.elements.activeElement?.updateSize(width, height);
-//   board.render.render();
+const drawTextElement = (options: DrawOptions) => {
+  const { board, mouseDownX, mouseDownY, width, height, isSync } = options;
+  const data = {
+    type: ElementType.Text,
+    mouseDownX,
+    mouseDownY,
+    width,
+    height,
+  };
+  board.elements.createElement(userId.value!, data);
+  board.elements.activeElement?.updateSize(width, height);
+  board.render.render();
 
-//   if (isSync) {
-//     const data = {
-//       boardId: board.boardId,
-//       type: ElementType.Text,
-//       mouseDownX,
-//       mouseDownY,
-//       width,
-//       height,
-//     };
+  if (isSync) {
+    const data = {
+      boardId: board.boardId,
+      type: ElementType.Text,
+      mouseDownX,
+      mouseDownY,
+      width,
+      height,
+    };
 
-//     ws.value!.sendWsMsg(userId.value!, roomId.value, 'draw', data);
-//   }
-// };
+    ws.value!.sendWsMsg(userId.value!, roomId.value, 'draw', data);
+  }
+};
 
 export { drawElement };

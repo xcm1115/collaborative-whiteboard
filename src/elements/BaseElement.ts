@@ -60,8 +60,6 @@ class BaseElement {
 
   // 检测某元素是否被击中
   isHit(x: number, y: number) {
-    console.log(this, x, y);
-    console.log(isCheckAtElementEdge(this, [x, y]));
     return isCheckAtElementEdge(this, [x, y]);
   }
 }

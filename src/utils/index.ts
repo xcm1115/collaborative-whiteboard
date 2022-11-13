@@ -1,3 +1,6 @@
+import { HIT_DISTANCE } from '@/elements';
+import BaseElement from '@/elements/BaseElement';
+
 // 计算两点之间的距离
 export const getTowPointDistance = (x1: number, y1: number, x2: number, y2: number) => {
   return Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2));
@@ -39,16 +42,14 @@ export const getPointToLineDistance = (
 };
 
 // 检测是否点击到折线上
-export const isCheckAtMultiSegment = (segments: number[][], rp = [0, 0]) => {
+export const isCheckAtMultiSegment = (segments: number[][], hitPoint = [0, 0]) => {
   let res = false;
-  console.log(segments);
-  segments.forEach((seg = [0, 0, 0, 0]) => {
+  segments.forEach((seg) => {
     if (res) return;
-    if (isCheckAtSegment(rp[0], rp[1], seg[0], seg[1], seg[2], seg[3])) {
+    if (isCheckAtSegment(hitPoint[0], hitPoint[1], ...seg, HIT_DISTANCE)) {
       res = true;
     }
   });
-  console.log(res);
   return res;
 };
 
@@ -60,10 +61,9 @@ export const isCheckAtSegment = (
   y1: number,
   x2: number,
   y2: number,
-  dis = 10
+  dis = HIT_DISTANCE
 ) => {
   if (getPointToLineDistance(x, y, x1, y1, x2, y2) > dis) {
-    console.log(1);
     return false;
   }
   const dis1 = getTowPointDistance(x, y, x1, y1);
@@ -71,8 +71,16 @@ export const isCheckAtSegment = (
   const dis3 = getTowPointDistance(x1, y1, x2, y2);
   const max = Math.sqrt(dis * dis + dis3 * dis3);
   if (dis1 <= max && dis2 <= max) {
-    console.log(2);
     return true;
   }
   return false;
+};
+
+// 判断一个坐标是否在一个矩形内
+export const isCheckInRectangle = (hitPoint = [0, 0], element: BaseElement) => {
+  const rx = element.mouseDownX;
+  const ry = element.mouseDownY;
+  const rw = element.width;
+  const rh = element.height;
+  return hitPoint[0] >= rx && hitPoint[0] <= rx + rw && hitPoint[1] >= ry && hitPoint[1] <= ry + rh;
 };

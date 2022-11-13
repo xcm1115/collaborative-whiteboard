@@ -115,15 +115,14 @@ class Board {
     if (this.drawType === ElementType.Arrow) {
       // 是否击中了某个元素
       const hitElement = this.elements.isCheckAtElement(e);
-      this.elements.setActiveElement(hitElement);
+      if (hitElement) {
+        this.elements.setActiveElement(hitElement);
+        this.render.renderHitElement(hitElement);
+      } else {
+        this.render.render();
+      }
       //增加击中样式
       // this.elements.setActiveElementStyle();
-      this.ctx.strokeStyle = 'blue';
-      this.elements.activeElement?.render();
-      this.ctx.strokeStyle = 'black';
-      // this.render.render();
-    } else {
-      this.render.render();
     }
   }
 

@@ -155,7 +155,6 @@ class Elements {
     for (let i = this.elementList.length - 1; i >= 0; i--) {
       const element = this.elementList[i];
       if (element.isHit(x, y)) {
-        console.log(element);
         return element;
       }
     }

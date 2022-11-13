@@ -111,13 +111,13 @@ const selectText = () => {
         </template>
       </n-button>
 
-      <!-- <n-button size="large" quaternary @click="selectText">
+      <n-button size="large" quaternary @click="selectText">
         <template #icon>
           <n-icon size="24" color="#ffffff">
             <Text />
           </n-icon>
         </template>
-      </n-button> -->
+      </n-button>
     </n-space>
   </div>
 </template>

@@ -34,7 +34,7 @@ class TextEdit {
       backfaceVisibility: 'hidden',
       margin: 0,
       padding: 0,
-      border: '1px solid #000',
+      border: 0,
       outline: 0,
       resize: 'none',
       background: 'transparent',
